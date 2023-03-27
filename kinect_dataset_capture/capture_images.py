@@ -29,6 +29,10 @@ def start_image_capture(ARGS):
 
     print("Saving colour and depth frames")
 
+    if not os.path.isdir(ARGS.dir_dataset):
+        os.makedirs(ARGS.dir_dataset)
+        print(f"Created directory: {ARGS.dir_dataset}")
+
     # define file names
     file_name_depth = os.path.join(ARGS.dir_dataset, "depth_images.pickle")
     file_name_color = os.path.join(ARGS.dir_dataset, "color_images.pickle")
@@ -61,6 +65,7 @@ def start_image_capture(ARGS):
         except TypeError:
             kinect_device_index = 0
             continue
+        freenect.sync_stop()
     print(f"saved {frame_count} frames")
 
     # close the pickle file descriptors
