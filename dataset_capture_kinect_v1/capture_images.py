@@ -15,6 +15,7 @@ is_capture = True
 def exit_handler(sig_num, stack_frame):
     global is_capture
     is_capture = False
+    return
 
 def get_depth_frame(kinect_device_index):
     return frame_convert2.pretty_depth_cv(freenect.sync_get_depth(kinect_device_index)[0])
@@ -28,7 +29,7 @@ def start_image_capture(ARGS):
     signal.signal(signal.SIGTERM, exit_handler)
 
     print("Saving colour and depth frames")
-
+    # create directory if it does not exist to save the data
     if not os.path.isdir(ARGS.dir_dataset):
         os.makedirs(ARGS.dir_dataset)
         print(f"Created directory: {ARGS.dir_dataset}")
