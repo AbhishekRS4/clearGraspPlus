@@ -20,7 +20,7 @@ sys.path.append("../..")
 import api.utils as api_utils
 
 
-class SurfaceNormalsDataset(Dataset):
+class ObjectSegmentationDataset(Dataset):
     """
     Dataset class for training model on estimation of surface normals.
     Uses imgaug for image augmentations.
@@ -190,7 +190,7 @@ if __name__ == "__main__":
     augs = None  # augs_train, augs_test, None
     input_only = None  # ["gaus-blur", "grayscale", "gaus-noise", "brightness", "contrast", "hue-sat", "color-jitter"]
 
-    db_test = SurfaceNormalsDataset(
+    db_test = ObjectSegmentationDataset(
         input_dir="data/datasets/milk-bottles/resized-files/preprocessed-rgb-imgs",
         label_dir="data/datasets/milk-bottles/resized-files/preprocessed-camera-normals",
         transform=augs,
