@@ -3,21 +3,15 @@
 from __future__ import print_function, division
 import os
 import glob
-from PIL import Image
-import Imath
-import numpy as np
-import imageio
-import sys
-
 import torch
-from torch.utils.data import Dataset
-from torchvision import transforms
-from imgaug import augmenters as iaa
+import imageio
+import numpy as np
 import imgaug as ia
 
-from utils import utils
-sys.path.append("../..")
-import api.utils as api_utils
+from PIL import Image
+from torchvision import transforms
+from imgaug import augmenters as iaa
+from torch.utils.data import Dataset, DataLoader
 
 
 class ObjectSegmentationDataset(Dataset):
@@ -74,23 +68,15 @@ class ObjectSegmentationDataset(Dataset):
 
         # Open input imgs
         image_path = self._datalist_input[index]
-        # for surface normals as input
-        # _img = api_utils.exr_loader(image_path, ndim=3)  # (3, H, W)
-        # _img = (_img + 1) / 2
-        # _img = _img.transpose(1,2,0)
-        # for rgb images as input
         _img = Image.open(image_path).convert("RGB")
         _img = np.array(_img)
 
         # Open labels
         if self.labels_dir:
             label_path = self._datalist_label[index]
-            # _label = Image.open(label_path).convert("L")
             mask = imageio.imread(label_path)
-            # _label = np.array(_label)[..., np.newaxis]
             _label = np.zeros(mask.shape, dtype=np.uint8)
             _label[mask >= 100] = 1
-
 
         # Apply image augmentations and convert to Tensor
         if self.transform:
@@ -157,35 +143,117 @@ class ObjectSegmentationDataset(Dataset):
             return default
 
 
+def load_concat_sub_datasets(dataset_type, aug_transform, percent_data=None, input_only=None):
+    db_list = []
+    for sub_dataset in dataset_type:
+        db_sub_dataset = ObjectSegmentationDataset(
+            input_dir=sub_dataset.images,
+            label_dir=sub_dataset.labels,
+            transform=aug_transform,
+            input_only=input_only,
+        )
+        if percent_data is not None:
+            data_size = int(percent_data * len(db_sub_dataset))
+            db_sub_dataset = torch.utils.data.Subset(db_sub_dataset, range(data_size))
+        db_list.append(db_sub_dataset)
+
+    db_complete_set = torch.utils.data.ConcatDataset(db_list)
+    return db_complete_set
+
+
+def get_data_loader(db_set, batch_size, num_workers=8, shuffle=False, pin_memory=False):
+    data_loader = DataLoader(
+        db_set,
+        batch_size=batch_size,
+        shuffle=shuffle,
+        num_workers=num_workers,
+        drop_last=True,
+        pin_memory=pin_memory,
+    )
+
+    return data_loader
+
+
+def get_augumentation_list(which_set, img_height, img_width):
+    augs_list_for_a_set = None
+
+    if which_set == "train":
+        augs_train = iaa.Sequential([
+            # Geometric Augs
+            iaa.Resize({
+                "height": config.train.imgHeight, # replace with img_height
+                "width": config.train.imgWidth # replace with img_width
+            }, interpolation="nearest"),
+            iaa.Fliplr(0.5),
+            iaa.Flipud(0.5),
+            iaa.Rot90((0, 4)),
+
+            # Bright Patches
+            iaa.Sometimes(
+                0.1,
+                iaa.blend.Alpha(factor=(0.2, 0.7),
+                                first=iaa.blend.SimplexNoiseAlpha(first=iaa.Multiply((1.5, 3.0), per_channel=False),
+                                                                  upscale_method="cubic",
+                                                                  iterations=(1, 2)),
+                                name="simplex-blend")),
+
+            # Color Space Mods
+            iaa.Sometimes(
+                0.3,
+                iaa.OneOf([
+                    iaa.Add((20, 20), per_channel=0.7, name="add"),
+                    iaa.Multiply((1.3, 1.3), per_channel=0.7, name="mul"),
+                    iaa.WithColorspace(to_colorspace="HSV",
+                                       from_colorspace="RGB",
+                                       children=iaa.WithChannels(0, iaa.Add((-200, 200))),
+                                       name="hue"),
+                    iaa.WithColorspace(to_colorspace="HSV",
+                                       from_colorspace="RGB",
+                                       children=iaa.WithChannels(1, iaa.Add((-20, 20))),
+                                       name="sat"),
+                    iaa.ContrastNormalization((0.5, 1.5), per_channel=0.2, name="norm"),
+                    iaa.Grayscale(alpha=(0.0, 1.0), name="gray"),
+                ])),
+
+            # Blur and Noise
+            iaa.Sometimes(
+                0.4,
+                iaa.SomeOf((1, None), [
+                    iaa.OneOf([iaa.MotionBlur(k=3, name="motion-blur"),
+                               iaa.GaussianBlur(sigma=(0.5, 1.0), name="gaus-blur")]),
+                    iaa.OneOf([
+                        iaa.AddElementwise((-5, 5), per_channel=0.5, name="add-element"),
+                        iaa.MultiplyElementwise((0.95, 1.05), per_channel=0.5, name="mul-element"),
+                        iaa.AdditiveGaussianNoise(scale=0.01 * 255, per_channel=0.5, name="guas-noise"),
+                        iaa.AdditiveLaplaceNoise(scale=(0, 0.01 * 255), per_channel=True, name="lap-noise"),
+                        iaa.Sometimes(1.0, iaa.Dropout(p=(0.003, 0.01), per_channel=0.5, name="dropout")),
+                    ]),
+                ],
+                           random_order=True)),
+
+            # Colored Blocks
+            iaa.Sometimes(0.4, iaa.CoarseDropout(0.03, size_px=(4, 8), per_channel=True, name="cdropout")),
+            iaa.Sometimes(0.15, iaa.CoarseDropout(0.02, size_px=(4, 10), per_channel=False, name="cdropout_black")),
+        ])
+        augs_list_for_a_set = augs_train
+    elif which_set == "validation" or which_set == "test":
+        augs_test = iaa.Sequential([
+            iaa.Resize({
+                "height": config.train.imgHeight, # replace with img_height
+                "width": config.train.imgWidth # replace with img_width
+            }, interpolation="nearest"),
+        ])
+        augs_list_for_a_set = augs_test
+
+    return augs_list_for_a_set
+
+
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     from torch.utils.data import DataLoader
     from torchvision import transforms
     import torchvision
-
-    # Example Augmentations using imgaug
-    # imsize = 512
-    # augs_train = iaa.Sequential([
-    #     # Geometric Augs
-    #     iaa.Scale((imsize, imsize), 0), # Resize image
-    #     iaa.Fliplr(0.5),
-    #     iaa.Flipud(0.5),
-    #     iaa.Rot90((0, 4)),
-    #     # Blur and Noise
-    #     #iaa.Sometimes(0.2, iaa.GaussianBlur(sigma=(0, 1.5), name="gaus-blur")),
-    #     #iaa.Sometimes(0.1, iaa.Grayscale(alpha=(0.0, 1.0), from_colorspace="RGB", name="grayscale")),
-    #     iaa.Sometimes(0.2, iaa.AdditiveLaplaceNoise(scale=(0, 0.1*255), per_channel=True, name="gaus-noise")),
-    #     # Color, Contrast, etc.
-    #     #iaa.Sometimes(0.2, iaa.Multiply((0.75, 1.25), per_channel=0.1, name="brightness")),
-    #     iaa.Sometimes(0.2, iaa.GammaContrast((0.7, 1.3), per_channel=0.1, name="contrast")),
-    #     iaa.Sometimes(0.2, iaa.AddToHueAndSaturation((-20, 20), name="hue-sat")),
-    #     #iaa.Sometimes(0.3, iaa.Add((-20, 20), per_channel=0.5, name="color-jitter")),
-    # ])
-    # augs_test = iaa.Sequential([
-    #     # Geometric Augs
-    #     iaa.Scale((imsize, imsize), 0),
-    # ])
 
     augs = None  # augs_train, augs_test, None
     input_only = None  # ["gaus-blur", "grayscale", "gaus-noise", "brightness", "contrast", "hue-sat", "color-jitter"]
