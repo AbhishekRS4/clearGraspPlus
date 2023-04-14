@@ -111,7 +111,7 @@ class ObjectSegmentationDataset(Dataset):
             ValueError: Number of images and labels do not match
         """
 
-        assert os.path.isdir(images_dir), "Dataloader given images directory that does not exist: "%s"" % (images_dir)
+        assert os.path.isdir(images_dir), f"Dataloader given images directory that does not exist: {images_dir}"
         for ext in self._extension_input:
             imageSearchStr = os.path.join(images_dir, "*" + ext)
             imagepaths = sorted(glob.glob(imageSearchStr))
@@ -121,17 +121,16 @@ class ObjectSegmentationDataset(Dataset):
             raise ValueError("No images found in given directory. Searched for {}".format(imageSearchStr))
 
         if labels_dir:
-            assert os.path.isdir(labels_dir), ("Dataloader given labels directory that does not exist: "%s""
-                                               % (labels_dir))
+            assert os.path.isdir(labels_dir), (f"Dataloader given labels directory that does not exist: {labels_dir}")
             labelSearchStr = os.path.join(labels_dir, "*" + self._extension_label)
             labelpaths = sorted(glob.glob(labelSearchStr))
             self._datalist_label = labelpaths
             numLabels = len(self._datalist_label)
             if numLabels == 0:
-                raise ValueError("No labels found in given directory. Searched for {}".format(imageSearchStr))
+                raise ValueError(f"No labels found in given directory. Searched for {imageSearchStr}")
             if numImages != numLabels:
-                raise ValueError("The number of images and labels do not match. Please check data,\
-                                found {} images and {} labels" .format(numImages, numLabels))
+                raise ValueError(f"The number of images and labels do not match. Please check data,\
+                                found {numImages} images and {numLabels} labels")
 
     def _activator_masks(self, images, augmenter, parents, default):
         """Used with imgaug to help only apply some augmentations to images and not labels
