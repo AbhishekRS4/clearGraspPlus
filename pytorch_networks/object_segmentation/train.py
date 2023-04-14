@@ -47,7 +47,8 @@ def get_optimizer_and_loss_func(config, model):
         momentum=float(config.train.optimSgd.momentum),
         weight_decay=float(config.train.optimSgd.weight_decay)
     )
-    criterion = utils.cross_entropy2d
+    #criterion = utils.cross_entropy2d
+    criterion = nn.CrossEntropyLoss()
     return optimizer, criterion
 
 
@@ -95,23 +96,24 @@ def train_loop(model, train_loader, optimizer, criterion, device, model_type, nu
 
     for iter_num, batch in enumerate(tqdm(train_loader)):
         inputs, labels = batch
-        inputs = inputs.to(device)
-        labels = labels.to(device)
+        inputs = inputs.to(device, dtype=torch.float)
+        labels = labels.to(device, dtype=torch.long)
 
         # Forward + Backward Prop
         optimizer.zero_grad()
         torch.set_grad_enabled(True)
         outputs = model.forward(inputs)
 
-        predictions = torch.max(outputs, 1)[1]
-        loss = criterion(outputs, labels)
+        #pred_labels = torch.max(outputs, 1)[1]
+        pred_labels = torch.argmax(outputs, 1)
+        loss = criterion(outputs, labels.squeeze(1))
 
         loss.backward()
         optimizer.step()
-        running_loss += loss.item()
+        running_loss += loss
 
         _total_iou, _, _ = utils.get_iou(
-            predictions, labels, n_classes=num_classes,
+            pred_labels, labels, n_classes=num_classes,
         )
         total_iou += _total_iou
 
@@ -130,18 +132,19 @@ def validation_loop(model, validation_loader, criterion, device, num_classes):
     with torch.no_grad():
         for iter_num, sample_batched in enumerate(tqdm(validation_loader)):
             inputs, labels = sample_batched
-            inputs = inputs.to(device)
-            labels = labels.to(device)
+            inputs = inputs.to(device, dtype=torch.float)
+            labels = labels.to(device, dtype=torch.long)
 
             outputs = model.forward(inputs)
 
-            loss = criterion(outputs, labels.long().squeeze(1))
-            running_loss += loss.item()
+            loss = criterion(outputs, labels.squeeze(1))
+            running_loss += loss
 
-            predictions = torch.max(outputs, 1)[1]
+            #pred_labels = torch.max(outputs, 1)[1]
+            pred_labels = torch.argmax(outputs, 1)
 
             _total_iou, _, _ = utils.get_iou(
-                predictions, labels, n_classes=num_classes,
+                pred_labels, labels, n_classes=num_classes,
             )
             total_iou += _total_iou
 
@@ -379,12 +382,12 @@ def start_training(ARGS):
     for epoch in range(START_EPOCH, END_EPOCH):
         train_loss, train_iou = 0.0, 0.0
         valid_loss, valid_iou = 0.0, 0.0
-        test_loss, test_real_iou = 0.0, 0.0
+        test_real_loss, test_real_iou = 0.0, 0.0
         test_syn_loss, test_syn_iou = 0.0, 0.0
 
         t_1 = time.time()
         print(f"\n\nEpoch {epoch}/{END_EPOCH - 1}")
-        print("=" * 10)
+        print("=" * 20)
 
         ###################### Training Cycle #############################
         # Update Learning Rate Scheduler
@@ -399,7 +402,7 @@ def start_training(ARGS):
         )
 
         print(f"\ntraining set, loss: {train_loss:.4f}, mean IoU: {train_iou:.4f}")
-        print("=" * 10)
+        print("=" * 20)
         # Log Current Learning Rate
         # TODO: NOTE: The lr of adam is not directly accessible. Adam creates a loss for every parameter in model.
         #    The value read here will only reflect the initial lr value.
@@ -431,29 +434,29 @@ def start_training(ARGS):
                     file_path_model,
                 )
         ###################### Validation Cycle #############################
-        if db_validation_list:
+        if db_validation:
             valid_loss, valid_iou = validation_loop(
                 model, validation_loader, criterion, device, config.train.numClasses
             )
             print(f"\nvalidation set, loss: {valid_loss:.4f}, mean IoU: {valid_iou:.4f}")
-            print("=" * 10)
+            print("=" * 20)
         ###################### Test Cycle - Real #############################
         if db_test_real:
             test_loss, test_real_iou = test_loop(
                 model, test_real_loader, criterion, device, config.train.numClasses
             )
             print(f"\ntesting real set, loss:{test_loss:.4f}, mean IoU: {test_real_iou:.4f}")
-            print("=" * 10)
+            print("=" * 20)
         ###################### Test Cycle - Synthetic #############################
         if db_test_syn:
             test_syn_loss, test_syn_iou = test_loop(
                 model, test_syn_loader, criterion, device, config.train.numClasses
             )
             print(f"\ntesting synthetic set, loss: {test_syn_loss:.4f},  mean IoU: {test_syn_iou:.4f}")
-            print("=" * 10)
+            print("=" * 20)
         t_2 = time.time()
         print(f"time: {(t_2-t_1):.2f} sec.")
-        print("=" * 20)
+        print("=" * 40)
         csv_writer.write_row(
             [
                 epoch,
