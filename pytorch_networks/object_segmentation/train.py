@@ -117,7 +117,7 @@ def train_loop(model, train_loader, optimizer, criterion, device, model_type, nu
 
     epoch_loss = running_loss / (len(train_loader))
     mean_iou = total_iou / len(train_loader.dataset)
-    return epoch_loss.cpu().detach().numpy(), mean_iou.cpu().detach().numpy()
+    return epoch_loss.cpu().detach().numpy(), mean_iou
 
 
 def validation_loop(model, validation_loader, criterion, device, num_classes):
@@ -147,7 +147,7 @@ def validation_loop(model, validation_loader, criterion, device, num_classes):
 
     epoch_loss = running_loss / (len(validation_loader))
     mean_iou = total_iou / len(validation_loader.dataset)
-    return epoch_loss.cpu().detach().numpy(), mean_iou.cpu().detach().numpy()
+    return epoch_loss.cpu().detach().numpy(), mean_iou
 
 
 def test_loop(model, test_loader, criterion, device, num_classes):
@@ -459,13 +459,13 @@ def start_training(ARGS):
                 epoch,
                 round(lr_epoch, 6),
                 np.around(train_loss, 6),
-                np.around(train_iou, 6),
+                round(train_iou, 6),
                 np.around(valid_loss, 6),
-                np.around(valid_iou, 6),
+                round(valid_iou, 6),
                 np.around(test_real_loss, 6),
-                np.around(test_real_iou, 6),
+                round(test_real_iou, 6),
                 np.around(test_syn_loss, 6),
-                np.around(test_syn_iou, 6),
+                round(test_syn_iou, 6),
             ]
         )
     # close the csv writer
