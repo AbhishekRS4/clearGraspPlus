@@ -3,8 +3,8 @@ import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
 from modeling.sync_batchnorm.batchnorm import SynchronizedBatchNorm2d
 
-from drn import conv3x3
-from polarized_self_attention import PSA_p, PSA_s
+from modeling.backbone.drn import conv3x3
+from modeling.backbone.polarized_self_attention import PSA_p, PSA_s
 
 
 class BottleneckPSA(nn.Module):
@@ -12,7 +12,7 @@ class BottleneckPSA(nn.Module):
 
     def __init__(self, inplanes, planes, stride=1, downsample=None,
                  dilation=(1, 1), residual=True, BatchNorm=None):
-        super(Bottleneck, self).__init__()
+        super(BottleneckPSA, self).__init__()
         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
         self.bn1 = BatchNorm(planes)
         self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride,
@@ -55,7 +55,7 @@ class DRN_PSA(nn.Module):
     def __init__(self, block, layers, arch="D",
                  channels=(16, 32, 64, 128, 256, 512, 512, 512),
                  BatchNorm=None):
-        super(DRN, self).__init__()
+        super(DRN_PSA, self).__init__()
         self.inplanes = channels[0]
         self.out_dim = channels[-1]
         self.arch = arch
