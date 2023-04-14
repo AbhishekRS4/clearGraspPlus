@@ -86,7 +86,7 @@ def get_lr_scheduler(config, optimizer):
     return lr_scheduler
 
 
-def train_loop(model, train_loader, criterion, device, model_type, num_classes):
+def train_loop(model, train_loader, optimizer, criterion, device, model_type, num_classes):
     model.train()
 
     running_loss = 0.0
@@ -394,7 +394,7 @@ def start_training(ARGS):
             lr_scheduler.step(epoch_loss)
 
         train_loss, train_iou = train_loop(
-            model, train_loader, criterion, device, config.train.model,
+            model, train_loader, optimizer, criterion, device, config.train.model,
             config.train.numClasses,
         )
 
