@@ -158,7 +158,7 @@ def test_loop(test_loader, criterion, device, num_classes):
 
 
 def start_training(ARGS):
-    FILE_PATH_CONFIG = ARGS.configFile
+    FILE_PATH_CONFIG = ARGS.config_file
     with open(FILE_PATH_CONFIG) as fd_config_yaml:
         # Returns an ordered dict. Used for printing
         config_yaml = oyaml.load(fd_config_yaml, Loader=oyaml.Loader)
