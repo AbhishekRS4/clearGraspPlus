@@ -178,6 +178,7 @@ def start_training(ARGS):
     shutil.copy(FILE_PATH_CONFIG, os.path.join(DIR_CHECKPOINT, "config.yaml"))
     logging_column_names = [
         "epoch",
+        "learning_rate"
         "train_loss",
         "train_iou",
         "valid_loss",
@@ -296,7 +297,7 @@ def start_training(ARGS):
                                 freeze_bn=False)  # output stride is 8 for drn
     elif config.train.model == "drn_psa":
         model = deeplab.DeepLab(num_classes=config.train.numClasses, backbone="drn_psa", sync_bn=True,
-                                freeze_bn=False)  # output stride is 8 for drn
+                                freeze_bn=False)  # output stride is 8 for drn_psa
     else:
         raise ValueError(f"Invalid model ({config.train.model}) in config file. Must be one of ['deeplab_xception', 'deeplab_resnet', 'drn', 'drn_psa']")
 
@@ -391,7 +392,11 @@ def start_training(ARGS):
         # Log Current Learning Rate
         # TODO: NOTE: The lr of adam is not directly accessible. Adam creates a loss for every parameter in model.
         #    The value read here will only reflect the initial lr value.
-        current_learning_rate = optimizer.param_groups[0]["lr"]
+        try:
+            lr_epoch = lr_scheduler.get_last_lr()
+            lr_epoch = lr_epoch[0]
+        except:
+            lr_epoch = config.optimSgd.learningRate
 
         # Save the model checkpoint every N epochs
         if (epoch % config.train.saveModelInterval) == 0:
@@ -439,14 +444,15 @@ def start_training(ARGS):
         csv_writer.write_row(
             [
                 epoch,
-                train_loss,
-                train_iou,
-                valid_loss,
-                valid_iou,
-                test_real_loss,
-                test_real_iou,
-                test_syn_loss,
-                test_syn_iou,
+                round(lr_epoch, 6),
+                np.around(train_loss, 6),
+                np.around(train_iou, 6),
+                np.around(valid_loss, 6),
+                np.around(valid_iou, 6),
+                np.around(test_real_loss, 6),
+                np.around(test_real_iou, 6),
+                np.around(test_syn_loss, 6),
+                np.around(test_syn_iou, 6),
             ]
         )
     # close the csv writer
