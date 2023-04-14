@@ -1,6 +1,7 @@
 '''
 Contains utility functions used by train/eval code.
 '''
+import csv
 import torch
 from torchvision.utils import make_grid
 import torch.nn as nn
