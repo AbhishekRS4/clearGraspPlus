@@ -86,7 +86,7 @@ def get_lr_scheduler(config, optimizer):
     return lr_scheduler
 
 
-def train_loop(train_loader, criterion, device, model_type, num_classes):
+def train_loop(model, train_loader, criterion, device, model_type, num_classes):
     model.train()
 
     running_loss = 0.0
@@ -120,7 +120,7 @@ def train_loop(train_loader, criterion, device, model_type, num_classes):
     return epoch_loss.cpu().detach().numpy(), mean_iou.cpu().detach().numpy()
 
 
-def validation_loop(validation_loader, criterion, device, num_classes):
+def validation_loop(model, validation_loader, criterion, device, num_classes):
     model.eval()
 
     running_loss = 0.0
@@ -150,9 +150,9 @@ def validation_loop(validation_loader, criterion, device, num_classes):
     return epoch_loss.cpu().detach().numpy(), mean_iou.cpu().detach().numpy()
 
 
-def test_loop(test_loader, criterion, device, num_classes):
+def test_loop(model, test_loader, criterion, device, num_classes):
     epoch_loss, mean_iou = validation_loop(
-        test_loader, criterion, device, num_classes,
+        model, test_loader, criterion, device, num_classes,
     )
     return epoch_loss, mean_iou
 
@@ -394,7 +394,7 @@ def start_training(ARGS):
             lr_scheduler.step(epoch_loss)
 
         train_loss, train_iou = train_loop(
-            train_loader, criterion, device, config.train.model,
+            model, train_loader, criterion, device, config.train.model,
             config.train.numClasses,
         )
 
@@ -433,21 +433,21 @@ def start_training(ARGS):
         ###################### Validation Cycle #############################
         if db_validation_list:
             valid_loss, valid_iou = validation_loop(
-                validation_loader, criterion, device, config.train.numClasses
+                model, validation_loader, criterion, device, config.train.numClasses
             )
             print(f"\nvalidation set, loss: {valid_loss:.4f}, mean IoU: {valid_iou:.4f}")
             print("=" * 10)
         ###################### Test Cycle - Real #############################
         if db_test_real:
             test_loss, test_real_iou = test_loop(
-                test_real_loader, criterion, device, config.train.numClasses
+                model, test_real_loader, criterion, device, config.train.numClasses
             )
             print(f"\ntesting real set, loss:{test_loss:.4f}, mean IoU: {test_real_iou:.4f}")
             print("=" * 10)
         ###################### Test Cycle - Synthetic #############################
         if db_test_syn:
             test_syn_loss, test_syn_iou = test_loop(
-                test_syn_loader, criterion, device, config.train.numClasses
+                model, test_syn_loader, criterion, device, config.train.numClasses
             )
             print(f"\ntesting synthetic set, loss: {test_syn_loss:.4f},  mean IoU: {test_syn_iou:.4f}")
             print("=" * 10)
