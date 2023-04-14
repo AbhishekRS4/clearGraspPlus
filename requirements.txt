@@ -20,3 +20,4 @@ torchvision>=0.4.1
 tqdm>=4.36.1
 open3d>=0.8.0.0
 pyats==23.3
+imgaug==0.4.0
