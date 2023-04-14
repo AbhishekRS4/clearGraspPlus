@@ -6,6 +6,7 @@ Train for transparent object segmentation task
 ## load from thrid party modules
 import os
 import glob
+import time
 import oyaml
 import torch
 import shutil
@@ -366,12 +367,14 @@ def start_training(ARGS):
                     "Could not load epoch and total iter nums from checkpoint, they do not exist in checkpoint.\
                            Starting from epoch num 0", "red"))
 
+
     for epoch in range(START_EPOCH, END_EPOCH):
         train_loss, train_iou = 0.0, 0.0
         valid_loss, valid_iou = 0.0, 0.0
         test_loss, test_real_iou = 0.0, 0.0
         test_syn_loss, test_syn_iou = 0.0, 0.0
 
+        t_1 = time.time()
         print(f"\n\nEpoch {epoch}/{END_EPOCH - 1}")
         print("=" * 10)
 
@@ -440,6 +443,8 @@ def start_training(ARGS):
             )
             print(f"\ntesting synthetic set, loss: {test_syn_loss:.4f},  mean IoU: {test_syn_iou:.4f}")
             print("=" * 10)
+        t_2 = time.time()
+        print(f"time: {(t_2-t_1):.2f} sec.")
         print("=" * 20)
         csv_writer.write_row(
             [
