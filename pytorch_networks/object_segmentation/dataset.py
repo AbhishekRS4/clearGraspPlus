@@ -11,6 +11,7 @@ import imgaug as ia
 from PIL import Image
 from torchvision import transforms
 from imgaug import augmenters as iaa
+from pyats.datastructures import NestedAttrDict
 from torch.utils.data import Dataset, DataLoader
 
 
@@ -145,6 +146,7 @@ class ObjectSegmentationDataset(Dataset):
 def load_concat_sub_datasets(dataset_type, aug_transform, percent_data=None, input_only=None):
     db_list = []
     for sub_dataset in dataset_type:
+        sub_dataset = NestedAttrDict(**sub_dataset)
         db_sub_dataset = ObjectSegmentationDataset(
             input_dir=sub_dataset.images,
             label_dir=sub_dataset.labels,

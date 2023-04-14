@@ -17,9 +17,9 @@ import torch.nn as nn
 
 from tqdm import tqdm
 from termcolor import colored
-from attrdict import AttrDict
 from multiprocessing import Process
 from imgaug import augmenters as iaa
+from pyats.datastructures import NestedAttrDict
 from torch.optim.lr_scheduler import _LRScheduler
 
 
@@ -162,8 +162,9 @@ def start_training(ARGS):
     with open(FILE_PATH_CONFIG) as fd_config_yaml:
         # Returns an ordered dict. Used for printing
         config_yaml = oyaml.load(fd_config_yaml, Loader=oyaml.Loader)
+        config_dict = dict(config_yaml)
 
-    config = AttrDict(config_yaml)
+    config = NestedAttrDict(**config_dict)
     print(colored(f"Config being used for training:\n{oyaml.dump(config_yaml)}\n\n", "green"))
 
     ###################### Logs (TensorBoard)  #############################
