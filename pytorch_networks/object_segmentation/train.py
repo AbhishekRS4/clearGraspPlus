@@ -244,9 +244,9 @@ def start_training(ARGS):
     # Create dataloaders
     # NOTE: Calculation of statistics like epoch_loss depend on the param drop_last being True. They calculate total num
     #       of images as num of batches * batchSize, which is true only when drop_last=True.
-    assert (config.train.batchSize <= len(db_train.dataset)), \
+    assert (config.train.batchSize <= len(db_train)), \
         (f"batchSize ({config.train.batchSize}) cannot be more than the " +
-         f"number of images in training dataset ({len(db_train.dataset)})")
+         f"number of images in training dataset ({len(db_train)})")
 
     train_loader = get_data_loader(
         db_train,
@@ -256,9 +256,9 @@ def start_training(ARGS):
     )
 
     if db_validation:
-        assert (config.train.validationBatchSize <= len(db_validation.dataset)), \
+        assert (config.train.validationBatchSize <= len(db_validation)), \
             (f"validationBatchSize ({config.train.validationBatchSize}) cannot be more than the " +
-             f"number of images in validation dataset: {len(db_validation.dataset)}")
+             f"number of images in validation dataset: {len(db_validation)}")
 
         validation_loader = get_data_loader(
             db_validation,
@@ -266,9 +266,9 @@ def start_training(ARGS):
         )
 
     if db_test_real:
-        assert (config.train.testBatchSize <= len(db_test_real.dataset)), \
+        assert (config.train.testBatchSize <= len(db_test_real)), \
             (f"testBatchSize ({config.train.testBatchSize}) cannot be more than the " +
-             f"number of images in test real dataset: {len(db_test_real.dataset)}")
+             f"number of images in test real dataset: {len(db_test_real)}")
 
         test_real_loader = get_data_loader(
             db_test_real,
@@ -276,9 +276,9 @@ def start_training(ARGS):
         )
 
     if db_test_syn:
-        assert (config.train.testBatchSize <= len(db_test_syn.dataset)), \
+        assert (config.train.testBatchSize <= len(db_test_syn)), \
             (f"testBatchSize ({config.train.testBatchSize}) cannot be more than the " +
-             f"number of images in test synthetic dataset: {len(db_test_syn.dataset)}")
+             f"number of images in test synthetic dataset: {len(db_test_syn)}")
 
         test_syn_loader = get_data_loader(
             db_test_syn,
