@@ -182,8 +182,8 @@ def get_augumentation_list(which_set, img_height, img_width):
         augs_train = iaa.Sequential([
             # Geometric Augs
             iaa.Resize({
-                "height": config.train.imgHeight, # replace with img_height
-                "width": config.train.imgWidth # replace with img_width
+                "height": img_height, # replace with img_height
+                "width": img_width # replace with img_width
             }, interpolation="nearest"),
             iaa.Fliplr(0.5),
             iaa.Flipud(0.5),
@@ -240,8 +240,8 @@ def get_augumentation_list(which_set, img_height, img_width):
     elif which_set == "validation" or which_set == "test":
         augs_test = iaa.Sequential([
             iaa.Resize({
-                "height": config.train.imgHeight, # replace with img_height
-                "width": config.train.imgWidth # replace with img_width
+                "height": img_height, # replace with img_height
+                "width": img_width # replace with img_width
             }, interpolation="nearest"),
         ])
         augs_list_for_a_set = augs_test

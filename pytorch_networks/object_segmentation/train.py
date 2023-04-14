@@ -203,6 +203,13 @@ def start_training(ARGS):
         "mul-element", "guas-noise", "lap-noise", "dropout", "cdropout", "cdropout_black"
     ]
 
+    augs_train = get_augumentation_list("train",
+        config.train.imgHeight, config.train.imgWidth
+    )
+    augs_test = get_augumentation_list("validation",
+        config.train.imgHeight, config.train.imgWidth
+    )
+
     # train set
     db_train = None
     if config.train.datasetsTrain is not None:
