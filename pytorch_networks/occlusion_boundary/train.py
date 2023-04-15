@@ -92,6 +92,8 @@ def train_loop(model, train_loader, optimizer, criterion, device, model_type, nu
     total_iou = 0.0
     mean_iou = 0.0
 
+    num_batches = len(train_loader)
+
     for iter_num, batch in enumerate(tqdm(train_loader)):
         inputs, labels = batch
         inputs = inputs.to(device, dtype=torch.float)
@@ -105,19 +107,20 @@ def train_loop(model, train_loader, optimizer, criterion, device, model_type, nu
         #pred_labels = torch.max(outputs, 1)[1]
         pred_labels = torch.argmax(outputs, 1)
         weight = torch.tensor([1.0, 5.0, 3.0], dtype=torch.float32)
-        loss = criterion(outputs, labels, weight=weight)
+        #weight = weight.to(device)
+        loss = criterion(outputs.cpu(), labels.cpu(), weight=weight)
 
         loss.backward()
         optimizer.step()
         running_loss += loss
 
-        _total_iou, _, _ = utils.get_iou(
-            pred_labels, labels, n_classes=num_classes,
+        _total_iou = utils.compute_mean_IOU(
+            labels, pred_labels, num_classes=num_classes,
         )
         total_iou += _total_iou
 
-    epoch_loss = running_loss / (len(train_loader))
-    mean_iou = total_iou / len(train_loader.dataset)
+    epoch_loss = running_loss / num_batches
+    mean_iou = total_iou / num_batches
     return epoch_loss.cpu().detach().numpy(), mean_iou
 
 
@@ -128,6 +131,8 @@ def validation_loop(model, validation_loader, criterion, device, num_classes):
     total_iou = 0.0
     mean_iou = 0.0
 
+    num_batches = len(validation_loader)
+
     with torch.no_grad():
         for iter_num, sample_batched in enumerate(tqdm(validation_loader)):
             inputs, labels = sample_batched
@@ -136,21 +141,20 @@ def validation_loop(model, validation_loader, criterion, device, num_classes):
 
             outputs = model.forward(inputs)
 
-            loss = criterion(outputs, labels.squeeze(1))
-            running_loss += loss
-
             #pred_labels = torch.max(outputs, 1)[1]
             pred_labels = torch.argmax(outputs, 1)
             weight = torch.tensor([1.0, 5.0, 3.0], dtype=torch.float32)
-            loss = criterion(outputs, labels, weight=weight)
+            #weight = weight.to(device)
+            loss = criterion(outputs.cpu(), labels.cpu(), weight=weight)
+            running_loss += loss
 
-            _total_iou, _, _ = utils.get_iou(
-                pred_labels, labels, n_classes=num_classes,
+            _total_iou = utils.compute_mean_IOU(
+                labels, pred_labels, num_classes=num_classes,
             )
             total_iou += _total_iou
 
-    epoch_loss = running_loss / (len(validation_loader))
-    mean_iou = total_iou / len(validation_loader.dataset)
+    epoch_loss = running_loss / num_batches
+    mean_iou = total_iou / num_batches
     return epoch_loss.cpu().detach().numpy(), mean_iou
 
 
@@ -458,13 +462,13 @@ def start_training(ARGS):
                 epoch,
                 round(lr_epoch, 6),
                 np.around(train_loss, 6),
-                round(train_iou, 6),
+                np.around(train_iou, 6),
                 np.around(valid_loss, 6),
-                round(valid_iou, 6),
+                np.around(valid_iou, 6),
                 np.around(test_real_loss, 6),
-                round(test_real_iou, 6),
+                np.around(test_real_iou, 6),
                 np.around(test_syn_loss, 6),
-                round(test_syn_iou, 6),
+                np.around(test_syn_iou, 6),
             ]
         )
     # close the csv writer
