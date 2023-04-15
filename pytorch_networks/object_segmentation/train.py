@@ -110,8 +110,8 @@ def train_loop(model, train_loader, optimizer, criterion, device, model_type, nu
         optimizer.step()
         running_loss += loss
 
-        _total_iou, _, _ = utils.get_iou(
-            pred_labels, labels, n_classes=num_classes,
+        _total_iou = utils.compute_mean_IOU(
+            labels, pred_labels, num_classes=num_classes,
         )
         total_iou += _total_iou
 
@@ -141,8 +141,8 @@ def validation_loop(model, validation_loader, criterion, device, num_classes):
             #pred_labels = torch.max(outputs, 1)[1]
             pred_labels = torch.argmax(outputs, 1)
 
-            _total_iou, _, _ = utils.get_iou(
-                pred_labels, labels, n_classes=num_classes,
+            _total_iou = utils.compute_mean_IOU(
+                labels, pred_labels, num_classes=num_classes,
             )
             total_iou += _total_iou
 
