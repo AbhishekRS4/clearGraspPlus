@@ -3,7 +3,7 @@ Train for transparent object segmentation task
 """
 
 
-## load from thrid party modules
+## load from python and thrid party modules
 import os
 import glob
 import time
@@ -17,8 +17,6 @@ import torch.nn as nn
 
 from tqdm import tqdm
 from termcolor import colored
-from multiprocessing import Process
-from imgaug import augmenters as iaa
 from pyats.datastructures import NestedAttrDict
 from torch.optim.lr_scheduler import _LRScheduler
 
@@ -170,17 +168,18 @@ def start_training(ARGS):
     config = NestedAttrDict(**config_dict)
     print(colored(f"Config being used for training:\n{oyaml.dump(config_yaml)}\n\n", "green"))
 
-    ###################### Logs (TensorBoard)  #############################
     # Create a new directory to save logs
-    runs = sorted(glob.glob(os.path.join(config.train.logsDir, "exp-*")))
+    runs = sorted(glob.glob(os.path.join(config.train.logsDir, "object_segmentation", "exp-*")))
     prev_run_id = int(runs[-1].split("-")[-1]) if runs else 0
-    DIR_CHECKPOINT = os.path.join(config.train.logsDir, f"exp-{prev_run_id+1}")
+    DIR_CHECKPOINT = os.path.join(config.train.logsDir, "object_segmentation", f"exp-{prev_run_id+1}")
     FILE_NAME_LOGS_CSV = os.path.join(DIR_CHECKPOINT, "train_logs.csv")
     os.makedirs(DIR_CHECKPOINT)
-    print(f"Saving logs to folder: " + colored(f"'{DIR_CHECKPOINT}'", "blue"))
+    print(f"Saving logs to folder: " + colored(f"{DIR_CHECKPOINT}", "blue"))
 
     # Save a copy of config file in the logs
     shutil.copy(FILE_PATH_CONFIG, os.path.join(DIR_CHECKPOINT, "config.yaml"))
+
+    # Create a csv writer
     logging_column_names = [
         "epoch",
         "learning_rate"
@@ -193,8 +192,6 @@ def start_training(ARGS):
         "test_syn_loss",
         "test_syn_iou",
     ]
-
-    # Create a csv writer
     csv_writer = utils.CSVWriter(
         FILE_NAME_LOGS_CSV,
         logging_column_names,
@@ -236,7 +233,7 @@ def start_training(ARGS):
     # test set - real
     db_test_real = None
     if config.train.datasetsTestReal is not None:
-        db_test = load_concat_sub_datasets(
+        db_test_real = load_concat_sub_datasets(
             config.train.datasetsTestReal,
             augs_test,
             percent_data=None,
@@ -246,7 +243,7 @@ def start_training(ARGS):
     # test set - synthetic
     db_test_syn = None
     if config.train.datasetsTestSynthetic is not None:
-        db_test = load_concat_sub_datasets(
+        db_test_syn = load_concat_sub_datasets(
             config.train.datasetsTestSynthetic,
             augs_test,
             percent_data=None,
@@ -391,10 +388,10 @@ def start_training(ARGS):
 
         ###################### Training Cycle #############################
         # Update Learning Rate Scheduler
-        if config.train.lrScheduler == "StepLR":
+        if config.train.lrScheduler == "StepLR" or config.train.lrScheduler == "PolyLR":
             lr_scheduler.step()
         elif config.train.lrScheduler == "ReduceLROnPlateau":
-            lr_scheduler.step(epoch_loss)
+            lr_scheduler.step(train_loss)
 
         train_loss, train_iou = train_loop(
             model, train_loader, optimizer, criterion, device, config.train.model,
@@ -478,7 +475,7 @@ def start_training(ARGS):
 
 def main():
     ###################### Load Config File #############################
-    parser = argparse.ArgumentParser(description="Run training of outlines prediction model")
+    parser = argparse.ArgumentParser(description="Run training of transparent object segmentation model")
     parser.add_argument("-c", "--config_file", required=True, help="Path to config yaml file", metavar="path/to/config")
     ARGS = parser.parse_args()
     start_training(ARGS)
