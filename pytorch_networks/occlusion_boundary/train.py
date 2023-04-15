@@ -162,7 +162,7 @@ def test_loop(model, test_loader, criterion, device, num_classes):
 
 
 def start_training(ARGS):
-    CONFIG_FILE_PATH = ARGS.configFile
+    CONFIG_FILE_PATH = ARGS.config_file
     with open(CONFIG_FILE_PATH) as fd_config_yaml:
         config_yaml = oyaml.load(fd_config_yaml, Loader=oyaml.Loader)  # Returns an ordered dict. Used for printing
         config_dict = dict(config_yaml)
@@ -475,7 +475,7 @@ def start_training(ARGS):
 def main():
     ###################### Load Config File #############################
     parser = argparse.ArgumentParser(description='Run training of transparent object occlusion boundary detection model')
-    parser.add_argument('-c', '--configFile', required=True, help='Path to config yaml file', metavar='path/to/config')
+    parser.add_argument('-c', '--config_file', required=True, help='Path to config yaml file', metavar='path/to/config')
     ARGS = parser.parse_args()
     start_training(ARGS)
     return
