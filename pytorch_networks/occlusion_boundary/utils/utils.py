@@ -98,7 +98,7 @@ def cross_entropy2d(logit, target, ignore_index=255, weight=None, batch_average=
 
 
 def FocalLoss(logit, target, weight, gamma=2, alpha=0.5, ignore_index=255, size_average=True, batch_average=True):
-    
+
     n, c, h, w = logit.shape
     target = target.squeeze(1)
     criterion = nn.CrossEntropyLoss(weight=weight, ignore_index=ignore_index,
@@ -129,8 +129,8 @@ def get_iou(pred, gt, n_classes=21):
         for j in range(n_classes):
             match = (pred_tmp == j) + (gt_tmp == j)
 
-            it = torch.sum(match == 2).item()
-            un = torch.sum(match > 0).item()
+            it = torch.sum(match == 2)
+            un = torch.sum(match > 0)
 
             intersect[j] += it
             union[j] += un
