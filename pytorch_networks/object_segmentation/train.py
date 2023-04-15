@@ -182,7 +182,7 @@ def start_training(ARGS):
     # Create a csv writer
     logging_column_names = [
         "epoch",
-        "learning_rate"
+        "learning_rate",
         "train_loss",
         "train_iou",
         "valid_loss",
