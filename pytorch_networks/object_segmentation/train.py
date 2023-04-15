@@ -92,6 +92,8 @@ def train_loop(model, train_loader, optimizer, criterion, device, model_type, nu
     total_iou = 0.0
     mean_iou = 0.0
 
+    num_batches = len(train_loader)
+
     for iter_num, batch in enumerate(tqdm(train_loader)):
         inputs, labels = batch
         inputs = inputs.to(device, dtype=torch.float)
@@ -115,8 +117,8 @@ def train_loop(model, train_loader, optimizer, criterion, device, model_type, nu
         )
         total_iou += _total_iou
 
-    epoch_loss = running_loss / (len(train_loader))
-    mean_iou = total_iou / len(train_loader.dataset)
+    epoch_loss = running_loss / num_batches
+    mean_iou = total_iou / num_batches
     return epoch_loss.cpu().detach().numpy(), mean_iou
 
 
@@ -126,6 +128,8 @@ def validation_loop(model, validation_loader, criterion, device, num_classes):
     running_loss = 0.0
     total_iou = 0.0
     mean_iou = 0.0
+
+    num_batches = len(validation_loader)
 
     with torch.no_grad():
         for iter_num, sample_batched in enumerate(tqdm(validation_loader)):
@@ -146,8 +150,8 @@ def validation_loop(model, validation_loader, criterion, device, num_classes):
             )
             total_iou += _total_iou
 
-    epoch_loss = running_loss / (len(validation_loader))
-    mean_iou = total_iou / len(validation_loader.dataset)
+    epoch_loss = running_loss / num_batches
+    mean_iou = total_iou / num_batches
     return epoch_loss.cpu().detach().numpy(), mean_iou
 
 
