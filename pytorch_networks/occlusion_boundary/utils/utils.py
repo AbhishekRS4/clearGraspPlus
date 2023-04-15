@@ -98,23 +98,48 @@ def cross_entropy2d(logit, target, ignore_index=255, weight=None, batch_average=
     return loss
 
 
-def FocalLoss(logit, target, weight, gamma=2, alpha=0.5, ignore_index=255, size_average=True, batch_average=True):
-
-    n, c, h, w = logit.shape
+def FocalLoss(logit, target, weight, gamma=2, alpha=0.5):
+    #n, c, h, w = logit.shape
     target = target.squeeze(1)
-    criterion = nn.CrossEntropyLoss(weight=weight, ignore_index=ignore_index,
-                                    reduction='sum')
+    criterion = nn.CrossEntropyLoss(weight=weight)
 
-    logpt = -criterion(logit, target.long())
+    logpt = -criterion(logit, target)
     pt = torch.exp(logpt)
     if alpha is not None:
         logpt *= alpha
     loss = -((1 - pt) ** gamma) * logpt
 
+    '''
     if batch_average:
         loss /= n
+    '''
 
     return loss
+
+
+# compute mean IOU
+def compute_mean_IOU(true_label, pred_label, num_classes=5):
+    iou_list = list()
+    present_iou_list = list()
+
+    pred_label = pred_label.view(-1)
+    true_label = true_label.view(-1)
+    # Note: Following for loop goes from 0 to (num_classes-1)
+    # in computation of IoU.
+    for sem_class in range(num_classes):
+        pred_label_inds = (pred_label == sem_class)
+        target_inds = (true_label == sem_class)
+        if target_inds.long().sum().item() == 0:
+            iou_now = float("nan")
+        else:
+            intersection_now = (pred_label_inds[target_inds]).long().sum().item()
+            union_now = pred_label_inds.long().sum().item() + target_inds.long().sum().item() - intersection_now
+            iou_now = float(intersection_now) / float(union_now)
+            present_iou_list.append(iou_now)
+        iou_list.append(iou_now)
+    present_iou_list = np.array(present_iou_list)
+    return np.nanmean(present_iou_list)
+
 
 def get_iou(pred, gt, n_classes=21):
     total_iou = 0.0
