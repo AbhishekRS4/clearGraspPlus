@@ -387,12 +387,6 @@ def start_training(ARGS):
         print("=" * 20)
 
         ###################### Training Cycle #############################
-        # Update Learning Rate Scheduler
-        if config.train.lrScheduler == "StepLR" or config.train.lrScheduler == "PolyLR":
-            lr_scheduler.step()
-        elif config.train.lrScheduler == "ReduceLROnPlateau":
-            lr_scheduler.step(train_loss)
-
         train_loss, train_iou = train_loop(
             model, train_loader, optimizer, criterion, device, config.train.model,
             config.train.numClasses,
@@ -468,6 +462,11 @@ def start_training(ARGS):
                 round(test_syn_iou, 6),
             ]
         )
+        # Update Learning Rate Scheduler
+        if config.train.lrScheduler == "StepLR" or config.train.lrScheduler == "PolyLR":
+            lr_scheduler.step()
+        elif config.train.lrScheduler == "ReduceLROnPlateau":
+            lr_scheduler.step(train_loss)
     # close the csv writer
     csv_writer.close()
     return
