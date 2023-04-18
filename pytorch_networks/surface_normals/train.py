@@ -149,7 +149,7 @@ def train_loop(model, train_loader, optimizer, criterion, device, model_type, nu
             epoch_percent_3.cpu().detach().numpy(),)
 
 
-def validation_loop(model, validation_loader, criterion, device, num_classes):
+def validation_loop(model, validation_loader, criterion, device, num_classes, batch_size):
     model.eval()
 
     running_loss_mean = 0.0
@@ -161,10 +161,10 @@ def validation_loop(model, validation_loader, criterion, device, num_classes):
     num_batches = len(validation_loader)
 
     with torch.no_grad():
-        for iter_num, sample_batched in enumerate(tqdm(validation_loader)):
-            inputs, labels = sample_batched
-            inputs = inputs.to(device, dtype=torch.float)
-            labels = labels.to(device, dtype=torch.long)
+        for iter_num, batch in enumerate(tqdm(validation_loader)):
+            inputs, labels, masks = batch
+            inputs = inputs.to(device)
+            labels = labels.to(device)
 
             normal_vectors = model(inputs)
             normal_vectors_norm = nn.functional.normalize(normal_vectors.double(), p=2, dim=1)
@@ -197,11 +197,15 @@ def validation_loop(model, validation_loader, criterion, device, num_classes):
             epoch_percent_3.cpu().detach().numpy(),)
 
 
-def test_loop(model, test_loader, criterion, device, num_classes):
-    epoch_loss, mean_iou = validation_loop(
-        model, test_loader, criterion, device, num_classes,
+def test_loop(model, test_loader, criterion, device, num_classes, batch_size):
+    epoch_loss_mean, epoch_loss_median, epoch_percent_1, epoch_percen_2, epoch_percent_3 = validation_loop(
+        model, test_loader, criterion, device, num_classes, batch_size
     )
-    return epoch_loss, mean_iou
+    return (epoch_loss_mean,
+            epoch_loss_median,
+            epoch_percent_1,
+            epoch_percent_2,
+            epoch_percent_3,)
 
 
 def start_training(ARGS):
@@ -215,9 +219,9 @@ def start_training(ARGS):
     print(colored(f"Config being used for training:\n{oyaml.dump(config_yaml)}\n\n", "green"))
 
     # Create a new directory to save logs
-    runs = sorted(glob.glob(os.path.join(config.train.logsDir, "object_segmentation", "exp-*")))
+    runs = sorted(glob.glob(os.path.join(config.train.logsDir, "surface_normals", "exp-*")))
     prev_run_id = int(runs[-1].split("-")[-1]) if runs else 0
-    DIR_CHECKPOINT = os.path.join(config.train.logsDir, "object_segmentation", f"exp-{prev_run_id+1}")
+    DIR_CHECKPOINT = os.path.join(config.train.logsDir, "surface_normals", f"exp-{prev_run_id+1}")
     FILE_NAME_LOGS_CSV = os.path.join(DIR_CHECKPOINT, "train_logs.csv")
     os.makedirs(DIR_CHECKPOINT)
     print(f"Saving logs to folder: " + colored(f"{DIR_CHECKPOINT}", "blue"))
@@ -481,25 +485,25 @@ def start_training(ARGS):
         ###################### Validation Cycle #############################
         if db_validation:
             valid_loss_mean, valid_loss_median, valid_percent_1, valid_percent_2, valid_percent_3 = validation_loop(
-                model, validation_loader, criterion, device, config.train.numClasses
+                model, validation_loader, criterion, device, config.train.numClasses, config.train.validationBatchSize,
             )
-            print(f"\validation set, mean loss: {valid_loss_mean:.4f}, median loss: {valid_loss_median:.4f}, percent 1: {valid_percent_1:.4f}"+\
+            print(f"\nvalidation set, mean loss: {valid_loss_mean:.4f}, median loss: {valid_loss_median:.4f}, percent 1: {valid_percent_1:.4f}"+\
                 f", percent 2: {valid_percent_2:.4f}, percent 3: {valid_percent_3:.4f}")
             print("=" * 20)
         ###################### Test Cycle - Real #############################
         if db_test_real:
             test_real_loss_mean, test_real_loss_median, test_real_percent_1, test_real_percent_2, test_real_percent_3 = test_loop(
-                model, test_real_loader, criterion, device, config.train.numClasses
+                model, test_real_loader, criterion, device, config.train.numClasses, config.train.testBatchSize,
             )
-            print(f"\test real set, mean loss: {test_real_loss_mean:.4f}, median loss: {test_real_loss_median:.4f}, percent 1: {test_real_percent_1:.4f}"+\
+            print(f"\ntest real set, mean loss: {test_real_loss_mean:.4f}, median loss: {test_real_loss_median:.4f}, percent 1: {test_real_percent_1:.4f}"+\
                 f", percent 2: {test_real_percent_2:.4f}, percent 3: {test_real_percent_3:.4f}")
             print("=" * 20)
         ###################### Test Cycle - Synthetic #############################
         if db_test_syn:
             test_syn_loss_mean, test_syn_loss_median, test_syn_percent_1, test_syn_percent_2, test_syn_percent_3 = test_loop(
-                model, test_syn_loader, criterion, device, config.train.numClasses
+                model, test_syn_loader, criterion, device, config.train.numClasses, config.train.testBatchSize,
             )
-            print(f"\test synthetic set, mean loss: {test_syn_loss_mean:.4f}, median loss: {test_syn_loss_median:.4f}, percent 1: {test_syn_percent_1:.4f}"+\
+            print(f"\ntest synthetic set, mean loss: {test_syn_loss_mean:.4f}, median loss: {test_syn_loss_median:.4f}, percent 1: {test_syn_percent_1:.4f}"+\
                 f", percent 2: {test_syn_percent_2:.4f}, percent 3: {test_syn_percent_3:.4f}")
             print("=" * 20)
         t_2 = time.time()
@@ -525,7 +529,7 @@ def start_training(ARGS):
                 np.around(test_real_pc_2, 6),
                 np.around(test_real_pc_3, 6),
                 np.around(test_syn_loss_mean, 6),
-                np.around(test_syn_median, 6),
+                np.around(test_syn_loss_median, 6),
                 np.around(test_syn_pc_1, 6),
                 np.around(test_syn_pc_2, 6),
                 np.around(test_syn_pc_3, 6),

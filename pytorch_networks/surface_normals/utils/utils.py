@@ -2,16 +2,15 @@
 '''
 
 import sys
-
+import csv
 import cv2
 import numpy as np
 import torch
 from torchvision.utils import make_grid
 import torch.nn as nn
 
-sys.path.append('../..')
-from api import utils as api_utils
-from api.utils import exr_loader, exr_saver
+sys.path.append('../../..')
+from .api_utils import exr_loader, exr_saver, depth2rgb
 
 
 def normal_to_rgb(normals_to_convert):
@@ -64,11 +63,11 @@ def create_grid_image(inputs, outputs, labels, max_num_images_to_save=3):
 
     loss_rad_rgb = np.zeros((loss_rad.shape[0], 3, loss_rad.shape[1], loss_rad.shape[2]), dtype=np.float32)
     for idx, img in enumerate(loss_rad.numpy()):
-        error_rgb = api_utils.depth2rgb(img,
-                                        min_depth=0.0,
-                                        max_depth=1.57,
-                                        color_mode=cv2.COLORMAP_PLASMA,
-                                        reverse_scale=False)
+        error_rgb = depth2rgb(img,
+                              min_depth=0.0,
+                              max_depth=1.57,
+                              color_mode=cv2.COLORMAP_PLASMA,
+                              reverse_scale=False)
         loss_rad_rgb[idx] = error_rgb.transpose(2, 0, 1) / 255
     loss_rad_rgb = torch.from_numpy(loss_rad_rgb)
     loss_rad_rgb[mask_invalid_pixels] = 0
@@ -85,3 +84,40 @@ def create_grid_image(inputs, outputs, labels, max_num_images_to_save=3):
 
 def lr_poly(base_lr, iter_, max_iter=100, power=0.9):
     return base_lr * ((1 - float(iter_) / max_iter)**power)
+
+
+class CSVWriter:
+    """
+    for writing tabular data to a csv file
+    """
+    def __init__(self, file_name, column_names):
+        self.file_name = file_name
+        self.column_names = column_names
+
+        self.file_handle = open(self.file_name, "w")
+        self.writer = csv.writer(self.file_handle)
+
+        self.write_header()
+        print(f"{self.file_name} created successfully with header row")
+
+    def write_header(self):
+        """
+        writes header into csv file
+        """
+        self.write_row(self.column_names)
+        return
+
+    def write_row(self, row):
+        """
+        writes a row into csv file
+        """
+        self.writer.writerow(row)
+        return
+
+    def close(self):
+        """
+        close the file
+        """
+        self.file_handle.close()
+        return
+
