@@ -79,6 +79,7 @@ def evaluate(model, test_loader, device, num_classes, precision=5):
 
 
 def start_evaluation(ARGS):
+    ###################### Load Config File #############################
     FILE_PATH_CONFIG = ARGS.config_file
     with open(FILE_PATH_CONFIG) as fd_config_yaml:
         # Returns an ordered dict. Used for printing
@@ -229,7 +230,6 @@ def start_evaluation(ARGS):
     return
 
 def main():
-    ###################### Load Config File #############################
     parser = argparse.ArgumentParser(
         description="Run eval of outlines prediction model",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
