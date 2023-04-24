@@ -22,9 +22,8 @@ from modeling import deeplab
 from dataset import get_augumentation_list, get_data_loader, load_concat_sub_datasets, ObjectSegmentationDataset
 
 
-def evaluate(model, test_loader, criterion, device, num_classes, precision=5):
+def evaluate(model, test_loader, device, num_classes, precision=5):
     model.eval()
-    running_loss = 0.0
     running_iou = []
     running_tp = []
     running_tn = []
@@ -42,9 +41,6 @@ def evaluate(model, test_loader, criterion, device, num_classes, precision=5):
 
             outputs = model(inputs)
             pred_labels = torch.argmax(outputs, 1)
-            loss = criterion(outputs, labels.squeeze(1))
-
-            running_loss += loss
 
             #print("pred:", pred_labels.shape, pred_labels.dtype, pred_labels.min(), pred_labels.max())
             #print("label:", labels.shape, labels.dtype, labels.min(), labels.max())
@@ -74,16 +70,15 @@ def evaluate(model, test_loader, criterion, device, num_classes, precision=5):
             imageio.imwrite(result_mask_path, (pred.squeeze(0).numpy() * 255).astype(np.uint8))
             """
 
-    mean_loss = round(running_loss.detach().cpu().numpy() / num_images, precision)
     mean_iou = round(sum(running_iou) / num_images, precision)
     mean_tp = round(sum(running_tp) / num_images, precision)
     mean_tn = round(sum(running_tn) / num_images, precision)
     mean_fp = round(sum(running_fp) / num_images, precision)
     mean_fn = round(sum(running_fn) / num_images, precision)
-    return mean_loss, mean_iou, mean_tp, mean_tn, mean_fp, mean_fn
+    return mean_iou, mean_tp, mean_tn, mean_fp, mean_fn
 
 
-def perform_evaluation(ARGS):
+def start_evaluation(ARGS):
     FILE_PATH_CONFIG = ARGS.config_file
     with open(FILE_PATH_CONFIG) as fd_config_yaml:
         # Returns an ordered dict. Used for printing
@@ -97,7 +92,6 @@ def perform_evaluation(ARGS):
     if not os.path.isfile(config.eval.pathWeightsFile):
         raise ValueError(f"Invalid path to the given weights file in config. The file {config.eval.pathWeightsFile} does not exist")
 
-    # Read config file stored in the model checkpoint to re-use it"s params
     CHECKPOINT = torch.load(config.eval.pathWeightsFile, map_location="cpu")
     if "model_state_dict" in CHECKPOINT:
         print(f"Loaded data from checkpoint weights file: {config.eval.pathWeightsFile}")
@@ -127,7 +121,7 @@ def perform_evaluation(ARGS):
     print(f"Saving results to folder: {DIR_RESULTS}")
     # Create CSV File to store error metrics
     FILE_NAME_LOGS_CSV = f"computed_metrics_epoch_{checkpoint_epoch_num}.csv"
-    logging_column_names = ["dataset", "mean_loss", "mean_IoU", "TP", "TN", "FP", "FN"]
+    logging_column_names = ["dataset", "mean_IoU", "TP", "TN", "FP", "FN"]
     csv_writer = utils.CSVWriter(
         os.path.join(DIR_RESULTS, FILE_NAME_LOGS_CSV),
         logging_column_names,
@@ -189,13 +183,6 @@ def perform_evaluation(ARGS):
 
     model.load_state_dict(CHECKPOINT["model_state_dict"])
 
-    # Enable Multi-GPU training
-    if torch.cuda.device_count() > 1:
-        print("Let's use", torch.cuda.device_count(), "GPUs!")
-        # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
-        model = nn.DataParallel(model)
-
-    criterion = nn.CrossEntropyLoss()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
 
@@ -219,21 +206,19 @@ def perform_evaluation(ARGS):
         if num_images_current == 0:
             continue
 
-        mean_loss, mean_iou, mean_tp, mean_tn, mean_fp, mean_fn = evaluate(
+        mean_iou, mean_tp, mean_tn, mean_fp, mean_fn = evaluate(
             model,
             test_loader_current,
-            criterion,
             device,
             config.eval.numClasses,
         )
 
         print(f"test set: {key}, num images: {num_images_current}")
-        print(f"\nevaluation metrics, mean loss: {mean_loss:.4f}, mean IoU: {mean_iou:.4f}, " +\
-              f"TP: {mean_tp:.4f} %, TN: {mean_tn:.4f} %, FP: {mean_fp:.4f} %, FN: {mean_fn:.4f} %")
+        print(f"\nevaluation metrics, mean IoU: {mean_iou:.4f}, TP: {mean_tp:.4f} %"+\
+              f", TN: {mean_tn:.4f} %, FP: {mean_fp:.4f} %, FN: {mean_fn:.4f} %")
         csv_writer.write_row(
             [
                 key,
-                mean_loss,
                 mean_iou,
                 mean_tp,
                 mean_tn,
@@ -251,7 +236,7 @@ def main():
     )
     parser.add_argument("-c", "--config_file", required=True, help="Path to yaml config file", metavar="path/to/config.yaml")
     ARGS = parser.parse_args()
-    perform_evaluation(ARGS)
+    start_evaluation(ARGS)
     return
 
 if __name__ == "__main__":
