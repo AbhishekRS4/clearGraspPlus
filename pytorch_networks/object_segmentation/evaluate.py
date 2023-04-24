@@ -121,7 +121,7 @@ def start_evaluation(ARGS):
     print(f"Saving results to folder: {DIR_RESULTS}")
     # Create CSV File to store error metrics
     FILE_NAME_LOGS_CSV = f"computed_metrics_epoch_{checkpoint_epoch_num}.csv"
-    logging_column_names = ["dataset", "mean_IoU", "TP", "TN", "FP", "FN"]
+    logging_column_names = ["model_name", "dataset", "mean_IoU", "TP", "TN", "FP", "FN"]
     csv_writer = utils.CSVWriter(
         os.path.join(DIR_RESULTS, FILE_NAME_LOGS_CSV),
         logging_column_names,
@@ -179,10 +179,9 @@ def start_evaluation(ARGS):
         model = deeplab.DeepLab(num_classes=config.train.numClasses, backbone="drn_psa", sync_bn=True,
                                 freeze_bn=False)  # output stride is 8 for drn_psa
     else:
-        raise ValueError(f"Invalid model ({config.eval.model}) in config file. Must be one of ['deeplab_xception', 'deeplab_resnet', 'drn', 'drn_psa']")
+        raise ValueError(f"Invalid model ({config.eval.model}) in config file")
 
     model.load_state_dict(CHECKPOINT["model_state_dict"])
-
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
 
@@ -192,7 +191,7 @@ def start_evaluation(ARGS):
     if db_test_syn:
         dict_dataset_loader.update({'synthetic': test_syn_loader})
 
-    ### Run Validation and Test Set ###
+    ### Run evaluation on the Test Set ###
     print("\nInference - transparent object segmentation task")
     print("=" * 50 + "\n")
 
@@ -218,6 +217,7 @@ def start_evaluation(ARGS):
               f", TN: {mean_tn:.4f} %, FP: {mean_fp:.4f} %, FN: {mean_fn:.4f} %")
         csv_writer.write_row(
             [
+                config.train.model,
                 key,
                 mean_iou,
                 mean_tp,
