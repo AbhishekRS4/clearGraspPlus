@@ -175,7 +175,7 @@ def start_evaluation(ARGS):
         model = deeplab.DeepLab(num_classes=config.eval.numClasses, backbone="resnet", sync_bn=True, freeze_bn=False)
     elif config.eval.model == "drn":
         model = deeplab.DeepLab(num_classes=config.eval.numClasses, backbone="drn", sync_bn=True, freeze_bn=False)
-    elif config.train.model == "drn_psa":
+    elif config.eval.model == "drn_psa":
         model = deeplab.DeepLab(num_classes=config.train.numClasses, backbone="drn_psa", sync_bn=True,
                                 freeze_bn=False)  # output stride is 8 for drn_psa
     else:
