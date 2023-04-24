@@ -162,13 +162,13 @@ def load_concat_sub_datasets(dataset_type, aug_transform, percent_data=None, inp
     return db_complete_set
 
 
-def get_data_loader(db_set, batch_size, num_workers=8, shuffle=False, pin_memory=False):
+def get_data_loader(db_set, batch_size, num_workers=8, shuffle=False, pin_memory=False, drop_last=True):
     data_loader = DataLoader(
         db_set,
         batch_size=batch_size,
         shuffle=shuffle,
         num_workers=num_workers,
-        drop_last=True,
+        drop_last=drop_last,
         pin_memory=pin_memory,
     )
 
