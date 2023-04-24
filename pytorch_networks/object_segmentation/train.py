@@ -478,7 +478,10 @@ def start_training(ARGS):
 
 def main():
     ###################### Load Config File #############################
-    parser = argparse.ArgumentParser(description="Run training of transparent object segmentation model")
+    parser = argparse.ArgumentParser(
+        description="Run training of transparent object segmentation model",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
     parser.add_argument("-c", "--config_file", required=True, help="Path to config yaml file", metavar="path/to/config")
     ARGS = parser.parse_args()
     start_training(ARGS)
