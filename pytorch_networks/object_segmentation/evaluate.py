@@ -19,7 +19,7 @@ from pyats.datastructures import NestedAttrDict
 
 from utils import utils
 from modeling import deeplab
-from dataset import get_augumentation_list, get_data_loader, load_concat_sub_datasets, ObjectSegmentationDataset
+from dataset import get_augumentation_list, get_data_loader, load_concat_sub_datasets
 
 
 def evaluate(model, test_loader, device, num_classes, precision=5):
@@ -176,7 +176,7 @@ def start_evaluation(ARGS):
     elif config.eval.model == "drn":
         model = deeplab.DeepLab(num_classes=config.eval.numClasses, backbone="drn", sync_bn=True, freeze_bn=False)
     elif config.eval.model == "drn_psa":
-        model = deeplab.DeepLab(num_classes=config.train.numClasses, backbone="drn_psa", sync_bn=True,
+        model = deeplab.DeepLab(num_classes=config.eval.numClasses, backbone="drn_psa", sync_bn=True,
                                 freeze_bn=False)  # output stride is 8 for drn_psa
     else:
         raise ValueError(f"Invalid model ({config.eval.model}) in config file")
@@ -217,7 +217,7 @@ def start_evaluation(ARGS):
               f", TN: {mean_tn:.4f} %, FP: {mean_fp:.4f} %, FN: {mean_fn:.4f} %")
         csv_writer.write_row(
             [
-                config.train.model,
+                config.eval.model,
                 key,
                 mean_iou,
                 mean_tp,
