@@ -1,4 +1,5 @@
-"""Run inference on outlines prediction model
+"""
+Evaluation script for occlusion boundary prediction task
 """
 
 import os
@@ -57,6 +58,7 @@ def evaluate(model, test_loader, device, num_classes, precision=5):
 
 
 def start_evaluation(ARGS):
+    ###################### Load Config File #############################
     FILE_PATH_CONFIG = ARGS.config_file
     with open(FILE_PATH_CONFIG) as fd_config_yaml:
         # Returns an ordered dict. Used for printing
@@ -84,7 +86,7 @@ def start_evaluation(ARGS):
     checkpoint_epoch_num = config.eval.pathWeightsFile.split("/")[-1].split(".")[0].split("_")[-1]
 
     DIR_RESULTS_ROOT = config.eval.resultsDir
-    DIR_RESULTS = os.path.join(DIR_RESULTS_ROOT, f"object_seg_epoch_{checkpoint_epoch_num}")
+    DIR_RESULTS = os.path.join(DIR_RESULTS_ROOT, f"occ_bound_epoch_{checkpoint_epoch_num}")
     if not os.path.isdir(DIR_RESULTS):
         os.makedirs(DIR_RESULTS)
 
@@ -204,9 +206,8 @@ def start_evaluation(ARGS):
 
 
 def main():
-    ###################### Load Config File #############################
     parser = argparse.ArgumentParser(
-        description="Run eval of outlines prediction model",
+        description="Run eval of occlusion boundary prediction model",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("-c", "--config_file", required=True, help="Path to yaml config file", metavar="path/to/config.yaml")
