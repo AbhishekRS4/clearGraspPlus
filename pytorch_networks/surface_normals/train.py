@@ -444,13 +444,13 @@ def start_training(ARGS):
         print("=" * 20)
 
         ###################### Training Cycle #############################
-        train_loss_mean, train_loss_median, train_percent_1, train_percent_2, train_percent_3 = train_loop(
+        train_loss_mean, train_loss_median, train_pc_1, train_pc_2, train_pc_3 = train_loop(
             model, train_loader, optimizer, criterion, device, config.train.model,
             config.train.numClasses, config.train.batchSize,
         )
 
-        print(f"\ntraining set, mean loss: {train_loss_mean:.4f}, median loss: {train_loss_median:.4f}, percent 1: {train_percent_1:.4f}"+\
-            f", percent 2: {train_percent_2:.4f}, percent 3: {train_percent_3:.4f}")
+        print(f"\ntraining set, mean loss: {train_loss_mean:.4f}, median loss: {train_loss_median:.4f}, percent 1: {train_pc_1:.4f}"+\
+            f", percent 2: {train_pc_2:.4f}, percent 3: {train_pc_3:.4f}")
         print("=" * 20)
 
         # Log Current Learning Rate
@@ -485,27 +485,27 @@ def start_training(ARGS):
                 )
         ###################### Validation Cycle #############################
         if db_validation:
-            valid_loss_mean, valid_loss_median, valid_percent_1, valid_percent_2, valid_percent_3 = validation_loop(
+            valid_loss_mean, valid_loss_median, valid_pc_1, valid_pc_2, valid_pc_3 = validation_loop(
                 model, validation_loader, criterion, device, config.train.numClasses, config.train.validationBatchSize,
             )
-            print(f"\nvalidation set, mean loss: {valid_loss_mean:.4f}, median loss: {valid_loss_median:.4f}, percent 1: {valid_percent_1:.4f}"+\
-                f", percent 2: {valid_percent_2:.4f}, percent 3: {valid_percent_3:.4f}")
+            print(f"\nvalidation set, mean loss: {valid_loss_mean:.4f}, median loss: {valid_loss_median:.4f}, percent 1: {valid_pc_1:.4f}"+\
+                f", percent 2: {valid_pc_2:.4f}, percent 3: {valid_pc_3:.4f}")
             print("=" * 20)
         ###################### Test Cycle - Real #############################
         if db_test_real:
-            test_real_loss_mean, test_real_loss_median, test_real_percent_1, test_real_percent_2, test_real_percent_3 = test_loop(
+            test_real_loss_mean, test_real_loss_median, test_real_pc_1, test_real_pc_2, test_real_pc_3 = test_loop(
                 model, test_real_loader, criterion, device, config.train.numClasses, config.train.testBatchSize,
             )
-            print(f"\ntest real set, mean loss: {test_real_loss_mean:.4f}, median loss: {test_real_loss_median:.4f}, percent 1: {test_real_percent_1:.4f}"+\
-                f", percent 2: {test_real_percent_2:.4f}, percent 3: {test_real_percent_3:.4f}")
+            print(f"\ntest real set, mean loss: {test_real_loss_mean:.4f}, median loss: {test_real_loss_median:.4f}, percent 1: {test_real_pc_1:.4f}"+\
+                f", percent 2: {test_real_pc_2:.4f}, percent 3: {test_real_pc_3:.4f}")
             print("=" * 20)
         ###################### Test Cycle - Synthetic #############################
         if db_test_syn:
-            test_syn_loss_mean, test_syn_loss_median, test_syn_percent_1, test_syn_percent_2, test_syn_percent_3 = test_loop(
+            test_syn_loss_mean, test_syn_loss_median, test_syn_pc_1, test_syn_pc_2, test_syn_pc_3 = test_loop(
                 model, test_syn_loader, criterion, device, config.train.numClasses, config.train.testBatchSize,
             )
-            print(f"\ntest synthetic set, mean loss: {test_syn_loss_mean:.4f}, median loss: {test_syn_loss_median:.4f}, percent 1: {test_syn_percent_1:.4f}"+\
-                f", percent 2: {test_syn_percent_2:.4f}, percent 3: {test_syn_percent_3:.4f}")
+            print(f"\ntest synthetic set, mean loss: {test_syn_loss_mean:.4f}, median loss: {test_syn_loss_median:.4f}, percent 1: {test_syn_pc_1:.4f}"+\
+                f", percent 2: {test_syn_pc_2:.4f}, percent 3: {test_syn_pc_3:.4f}")
             print("=" * 20)
         t_2 = time.time()
         print(f"time: {(t_2-t_1):.2f} sec.")
