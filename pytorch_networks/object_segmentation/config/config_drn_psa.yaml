@@ -3,16 +3,16 @@ train:
   # For datasets, please pass atleast 1 value. If no datasets exist, pass "" as path for images.
   # Synthetic datasets with ground truth labels
   datasetsTrain:
-  - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/cup-with-waves-train/rgb-imgs'
-    labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/cup-with-waves-train/segmentation-masks'
-  - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/flower-bath-bomb-train/rgb-imgs'
-    labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/flower-bath-bomb-train/segmentation-masks'
-  - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/heart-bath-bomb-train/rgb-imgs'
-    labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/heart-bath-bomb-train/segmentation-masks'
-  - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/square-plastic-bottle-train/rgb-imgs'
-    labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/square-plastic-bottle-train/segmentation-masks'
-  - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/stemless-plastic-champagne-glass-train/rgb-imgs'
-    labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/stemless-plastic-champagne-glass-train/segmentation-masks'
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/cup-with-waves-train/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/cup-with-waves-train/segmentation-masks'
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/flower-bath-bomb-train/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/flower-bath-bomb-train/segmentation-masks'
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/heart-bath-bomb-train/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/heart-bath-bomb-train/segmentation-masks'
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/square-plastic-bottle-train/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/square-plastic-bottle-train/segmentation-masks'
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/stemless-plastic-champagne-glass-train/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/stemless-plastic-champagne-glass-train/segmentation-masks'
 
 
   # Synthetic datasets with ground truth labels - 10% split of train
@@ -30,22 +30,22 @@ train:
 
   # Real Images (no ground truth labels)
   datasetsTestReal:
-    # - images: 'data/datasets/test/camera-pics/resized-files/preprocessed-rgb-imgs'
-    #   labels: ''
-    # - images: 'data/datasets/test/realsense-captures/resized-files/preprocessed-rgb-imgs'
-    #   labels: ''
-    # - images: 'data/datasets/test/realsense-demo-table-2/rgb-imgs'
-    #   labels: ''
-    # - images: 'data/datasets/test/realsense-demo-table-3/rgb-imgs'
-    #   labels: ''
+    #- images: 'data/datasets/test/camera-pics/resized-files/preprocessed-rgb-imgs'
+    #  labels: ''
+    #- images: 'data/datasets/test/realsense-captures/resized-files/preprocessed-rgb-imgs'
+    #  labels: ''
+    #- images: 'data/datasets/test/realsense-demo-table-2/rgb-imgs'
+    #  labels: ''
+    #- images: 'data/datasets/test/realsense-demo-table-3/rgb-imgs'
+    #  labels: ''
 
   # Synthetic datasets with ground truth labels - Used as test set
   datasetsTestSynthetic:
-    # - images: 'data/data/datasets/test-synthetic/scoop-val/rgb-imgs'
-    #   labels: 'data/data/datasets/test-synthetic/scoop-val/segmentation-masks'
+    #- images: 'data/data/datasets/test-synthetic/scoop-val/rgb-imgs'
+    #  labels: 'data/data/datasets/test-synthetic/scoop-val/segmentation-masks'
 
   # Training/Validation Params
-  model: "drn_psa" # Possible values: ['deeplab_xception', 'deeplab_resnet', 'drn', 'drn_psa']
+  model: "drn_psa" # Possible values: ['drn', 'drn_psa']
   batchSize: 16
   validationBatchSize: 16
   testBatchSize: 16
@@ -120,7 +120,7 @@ eval:
 
   # Params
   saveResultImages: False
-  model: "drn_psa" # Possible values: ['deeplab_xception', 'deeplab_resnet', 'drn', 'drn_psa']
+  model: "drn_psa" # Possible values: ['drn', 'drn_psa']
   numClasses: 2
   batchSize: 1
   imgHeight: 256
