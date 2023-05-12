@@ -3,32 +3,48 @@ train:
   # For datasets, please pass atleast 1 value. If no datasets exist, pass "" as path for images.
   # Synthetic datasets with ground truth labels
   datasetsTrain:
-  - images: 'data/data/datasets/train/star-lying-flat-train/source-files/rgb-imgs'
-    labels: 'data/data/datasets/train/star-lying-flat-train/source-files/outlines'
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/stemless-plastic-champagne-glass-train/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/stemless-plastic-champagne-glass-train/outlines'
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/square-plastic-bottle-train/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/square-plastic-bottle-train/outlines'
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/heart-bath-bomb-train/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/heart-bath-bomb-train/outlines'
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/flower-bath-bomb-train/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/flower-bath-bomb-train/outlines'
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/cup-with-waves-train/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-train/cup-with-waves-train/outlines'
 
   # Synthetic datasets with ground truth labels - 10% split of train
   datasetsVal:
-    - images: 'data/data/datasets/val/cup-with-waves-val/source-files/rgb-imgs'
-      labels: 'data/data/datasets/val/cup-with-waves-val/source-files/outlines'
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-val/stemless-plastic-champagne-glass-val/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-val/stemless-plastic-champagne-glass-val/outlines'
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-val/square-plastic-bottle-val/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-val/square-plastic-bottle-val/outlines'
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-val/heart-bath-bomb-val/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-val/heart-bath-bomb-val/outlines'
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-val/flower-bath-bomb-val/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-val/flower-bath-bomb-val/outlines'
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-val/cup-with-waves-val/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-val/cup-with-waves-val/outlines'
 
   # Real Images (no ground truth labels)
   datasetsTestReal:
-    # - images: 'data/datasets/test/camera-pics/resized-files/preprocessed-rgb-imgs'
-    #   labels: ''
-    # - images: 'data/datasets/test/realsense-captures/resized-files/preprocessed-rgb-imgs'
-    #   labels: ''
-    # - images: 'data/datasets/test/realsense-demo-table-2/source-files/rgb-imgs'
-    #   labels: ''
-    # - images: 'data/datasets/test/realsense-demo-table-3/source-files/rgb-imgs'
-    #   labels: ''
+    #- images: 'data/datasets/test/camera-pics/resized-files/preprocessed-rgb-imgs'
+    #  labels: ''
+    #- images: 'data/datasets/test/realsense-captures/resized-files/preprocessed-rgb-imgs'
+    #  labels: ''
+    #- images: 'data/datasets/test/realsense-demo-table-2/source-files/rgb-imgs'
+    #  labels: ''
+    #- images: 'data/datasets/test/realsense-demo-table-3/source-files/rgb-imgs'
+    #  labels: ''
 
   # Synthetic datasets with ground truth labels - Used as test set
   datasetsTestSynthetic:
-    - images: 'data/data/datasets/test-synthetic/scoop-val/source-files/rgb-imgs'
-      labels: 'data/data/datasets/test-synthetic/scoop-val/source-files/outlines'
+    #- images: 'data/data/datasets/test-synthetic/scoop-val/source-files/rgb-imgs'
+    #  labels: 'data/data/datasets/test-synthetic/scoop-val/source-files/outlines'
 
   # Training/Validation Params
-  model: "drn" # Possible values: ['deeplab_xception', 'deeplab_resnet', 'drn']
+  model: "drn_psa" # Possible values: ['drn', 'drn_psa']
   batchSize: 8
   validationBatchSize: 8
   testBatchSize: 8
@@ -62,7 +78,7 @@ train:
     learningRate: 1e-2
     momentum: 0.9
     weight_decay: 1e-4
-  lrScheduler: "PolyLR" # Possible Values: ['', 'StepLR', 'ReduceLROnPlateau', 'PolyLR'] 
+  lrScheduler: "PolyLR" # Possible Values: ['', 'StepLR', 'ReduceLROnPlateau', 'PolyLR']
   lrSchedulerStep:
     step_size: 7
     gamma: 0.1
@@ -79,8 +95,14 @@ eval:
   # Synthetic datasets with ground truth labels
   # Used as validation set
   datasetsSynthetic:
-    - images: 'data/data/datasets/val/cup-with-waves-val/source-files/rgb-imgs'
-      labels: 'data/data/datasets/val/cup-with-waves-val/source-files/outlines'
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-test/glass-square-potion-test/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-test/glass-square-potion-test/outlines'
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-test/glass-round-potion-test/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-test/glass-round-potion-test/outlines'
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-test/star-bath-bomb-test/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-test/star-bath-bomb-test/outlines'
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-test/tree-bath-bomb-test/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-test/tree-bath-bomb-test/outlines'
 
   # Datasets of real images, no labels available
   # Used as Test set
@@ -97,13 +119,13 @@ eval:
     #   labels: 'data/datasets/matterport3d/train/matterport_render_normal'
 
   # Params
-  model: "drn" # Possible values: ['deeplab_xception', 'deeplab_resnet', 'drn']
+  saveResultImages: False
+  model: "drn_psa" # Possible values: ['drn', 'drn_psa']
   numClasses: 3
-  batchSize: 32
+  batchSize: 1
   imgHeight: 256
   imgWidth: 256
-  os: 8
+  #os: 8
   numWorkers: 4 # Num of workers used in the dataloader
-  pathWeightsFile: "checkpoints/outlines/drn-256p-contact-edges/checkpoints/checkpoint-epoch-0051.pth" # Path to the checkpoint to be loaded
-  resultsDir: "data/results"
-
+  pathWeightsFile: "/home/abhishek/Desktop/RUG/ai_master_thesis/my_checkpoints/drn_psa/occlusion_boundary/occ_boundary_epoch_68.pth" # Path to the checkpoint to be loaded
+  resultsDir: "/home/abhishek/Desktop/RUG/ai_master_thesis/my_checkpoints/drn_psa/occlusion_boundary/results/"
