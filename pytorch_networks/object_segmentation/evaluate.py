@@ -3,6 +3,7 @@ Evaluation script for object segmentation task
 """
 
 import os
+import sys
 import errno
 import oyaml
 import torch
@@ -22,7 +23,7 @@ from modeling import deeplab
 from dataset import get_augumentation_list, get_data_loader, load_concat_sub_datasets
 
 
-def evaluate(model, test_loader, device, num_classes, precision=5):
+def evaluate(model, test_loader, device, num_classes, precision=5, dir_results_top=None, dir_sub_results=None, dir_sub_masks=None):
     model.eval()
     running_iou = []
     running_tp = []
@@ -33,7 +34,7 @@ def evaluate(model, test_loader, device, num_classes, precision=5):
 
     with torch.no_grad():
         for ii, sample_batched in enumerate(tqdm(test_loader)):
-            inputs, labels = sample_batched
+            inputs, labels, image_path = sample_batched
 
             # Forward pass of the mini-batch
             inputs = inputs.to(device, dtype=torch.float)
@@ -53,22 +54,28 @@ def evaluate(model, test_loader, device, num_classes, precision=5):
             running_fp.append(fp)
             running_fn.append(fn)
 
-            """
+            #print(image_path)
+            #print(image_path[0].split("/")[-1].split(".")[0])
+
             # Save Results
             # grid image with input, prediction and label
-            pred_rgb = utils.label_to_rgb(torch.unsqueeze(pred, 0))
-            label_rgb = utils.label_to_rgb(label)
+            if dir_results_top is not None:
+                img = inputs.detach().cpu()
+                dataset_string = image_path[0].split("/")[-3]
+                image_string = image_path[0].split("/")[-1].split(".")[0]
+                pred_rgb = utils.label_to_rgb(torch.unsqueeze(pred_labels, 0))
+                label_rgb = utils.label_to_rgb(labels)
 
-            images = torch.cat((img, pred_rgb, label_rgb), dim=2)
-            grid_image = make_grid(images, 1, normalize=True, scale_each=True)
-            numpy_grid = grid_image * 255  # Scale from range [0.0, 1.0] to [0, 255]
-            numpy_grid = numpy_grid.numpy().transpose(1, 2, 0).astype(np.uint8)
-            imageio.imwrite(result_path, numpy_grid)
+                images = torch.cat((img, pred_rgb, label_rgb), dim=2)
+                grid_image = make_grid(images, 1, normalize=True, scale_each=True)
+                numpy_grid = grid_image * 255  # Scale from range [0.0, 1.0] to [0, 255]
+                numpy_grid = numpy_grid.numpy().transpose(1, 2, 0).astype(np.uint8)
+                result_path = os.path.join(dir_results_top, dir_sub_results, f"{dataset_string}_{image_string}_result.png")
+                imageio.imwrite(result_path, numpy_grid)
 
-            result_mask_path = os.path.join(DIR_RESULTS, SUBDIR_MASKS,
-                                            "{:09d}-mask.png".format(ii * config.eval.batchSize + iii))
-            imageio.imwrite(result_mask_path, (pred.squeeze(0).numpy() * 255).astype(np.uint8))
-            """
+                result_mask_path = os.path.join(dir_results_top, dir_sub_masks, f"{dataset_string}_{image_string}_mask.png")
+                imageio.imwrite(result_mask_path, (pred_labels.detach().cpu().squeeze(0).numpy() * 255).astype(np.uint8))
+
 
     mean_iou = round(sum(running_iou) / num_images, precision)
     mean_tp = round(sum(running_tp) / num_images, precision)
@@ -124,7 +131,7 @@ def start_evaluation(ARGS):
     FILE_NAME_LOGS_CSV = f"computed_metrics_epoch_{checkpoint_epoch_num}.csv"
     logging_column_names = ["model_name", "dataset", "mean_IoU", "TP", "TN", "FP", "FN"]
     csv_writer = utils.CSVWriter(
-        os.path.join(DIR_RESULTS, FILE_NAME_LOGS_CSV),
+        os.path.join(DIR_RESULTS_ROOT, FILE_NAME_LOGS_CSV),
         logging_column_names,
     )
 
@@ -170,11 +177,7 @@ def start_evaluation(ARGS):
                                            drop_last=False)
 
     ###################### ModelBuilder #############################
-    if config.eval.model == "deeplab_xception":
-        model = deeplab.DeepLab(num_classes=config.eval.numClasses, backbone="xception", sync_bn=True, freeze_bn=False)
-    elif config.eval.model == "deeplab_resnet":
-        model = deeplab.DeepLab(num_classes=config.eval.numClasses, backbone="resnet", sync_bn=True, freeze_bn=False)
-    elif config.eval.model == "drn":
+    if config.eval.model == "drn":
         model = deeplab.DeepLab(num_classes=config.eval.numClasses, backbone="drn", sync_bn=True, freeze_bn=False)
     elif config.eval.model == "drn_psa":
         model = deeplab.DeepLab(num_classes=config.eval.numClasses, backbone="drn_psa", sync_bn=True,
@@ -196,6 +199,14 @@ def start_evaluation(ARGS):
     print("\nInference - transparent object segmentation task")
     print("=" * 50 + "\n")
 
+    dir_results_top = None
+    dir_sub_results = None
+    dir_sub_masks = None
+    if config.eval.saveResultImages:
+        dir_results_top = DIR_RESULTS
+        dir_sub_results = SUBDIR_RESULT
+        dir_sub_masks = SUBDIR_MASKS
+
     for key in dict_dataset_loader:
         print("\n" + key + ":")
         print("=" * 30)
@@ -211,6 +222,9 @@ def start_evaluation(ARGS):
             test_loader_current,
             device,
             config.eval.numClasses,
+            dir_results_top=dir_results_top,
+            dir_sub_results=SUBDIR_RESULT,
+            dir_sub_masks=SUBDIR_MASKS,
         )
 
         print(f"test set: {key}, num images: {num_images_current}")
