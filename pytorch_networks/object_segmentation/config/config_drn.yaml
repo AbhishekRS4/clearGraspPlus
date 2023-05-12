@@ -1,0 +1,131 @@
+# train.py Config - Training
+train:
+  # For datasets, please pass atleast 1 value. If no datasets exist, pass "" as path for images.
+  # Synthetic datasets with ground truth labels
+  datasetsTrain:
+  - images: '/scratch/s4304675/ai_master_thesis/cleargrasp-dataset-train/cup-with-waves-train/rgb-imgs'
+    labels: '/scratch/s4304675/ai_master_thesis/cleargrasp-dataset-train/cup-with-waves-train/segmentation-masks'
+  - images: '/scratch/s4304675/ai_master_thesis/cleargrasp-dataset-train/flower-bath-bomb-train/rgb-imgs'
+    labels: '/scratch/s4304675/ai_master_thesis/cleargrasp-dataset-train/flower-bath-bomb-train/segmentation-masks'
+  - images: '/scratch/s4304675/ai_master_thesis/cleargrasp-dataset-train/heart-bath-bomb-train/rgb-imgs'
+    labels: '/scratch/s4304675/ai_master_thesis/cleargrasp-dataset-train/heart-bath-bomb-train/segmentation-masks'
+  - images: '/scratch/s4304675/ai_master_thesis/cleargrasp-dataset-train/square-plastic-bottle-train/rgb-imgs'
+    labels: '/scratch/s4304675/ai_master_thesis/cleargrasp-dataset-train/square-plastic-bottle-train/segmentation-masks'
+  - images: '/scratch/s4304675/ai_master_thesis/cleargrasp-dataset-train/stemless-plastic-champagne-glass-train/rgb-imgs'
+    labels: '/scratch/s4304675/ai_master_thesis/cleargrasp-dataset-train/stemless-plastic-champagne-glass-train/segmentation-masks'
+
+
+  # Synthetic datasets with ground truth labels - 10% split of train
+  datasetsVal:
+    - images: '/scratch/s4304675/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-val/cup-with-waves-val/rgb-imgs'
+      labels: '/scratch/s4304675/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-val/cup-with-waves-val/segmentation-masks'
+    - images: '/scratch/s4304675/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-val/flower-bath-bomb-val/rgb-imgs'
+      labels: '/scratch/s4304675/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-val/flower-bath-bomb-val/segmentation-masks'
+    - images: '/scratch/s4304675/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-val/heart-bath-bomb-val/rgb-imgs'
+      labels: '/scratch/s4304675/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-val/heart-bath-bomb-val/segmentation-masks'
+    - images: '/scratch/s4304675/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-val/square-plastic-bottle-val/rgb-imgs'
+      labels: '/scratch/s4304675/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-val/square-plastic-bottle-val/segmentation-masks'
+    - images: '/scratch/s4304675/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-val/stemless-plastic-champagne-glass-val/rgb-imgs'
+      labels: '/scratch/s4304675/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-val/stemless-plastic-champagne-glass-val/segmentation-masks'
+
+  # Real Images (no ground truth labels)
+  datasetsTestReal:
+    # - images: 'data/datasets/test/camera-pics/resized-files/preprocessed-rgb-imgs'
+    #   labels: ''
+    # - images: 'data/datasets/test/realsense-captures/resized-files/preprocessed-rgb-imgs'
+    #   labels: ''
+    # - images: 'data/datasets/test/realsense-demo-table-2/rgb-imgs'
+    #   labels: ''
+    # - images: 'data/datasets/test/realsense-demo-table-3/rgb-imgs'
+    #   labels: ''
+
+  # Synthetic datasets with ground truth labels - Used as test set
+  datasetsTestSynthetic:
+    # - images: 'data/data/datasets/test-synthetic/scoop-val/rgb-imgs'
+    #   labels: 'data/data/datasets/test-synthetic/scoop-val/segmentation-masks'
+
+  # Training/Validation Params
+  model: "drn_psa" # Possible values: ['deeplab_xception', 'deeplab_resnet', 'drn', 'drn_psa']
+  batchSize: 16
+  validationBatchSize: 16
+  testBatchSize: 16
+  numEpochs: 5
+  imgHeight: 256
+  imgWidth: 256
+  numClasses: 2
+  numInputChannels: 3 # Num of channels in input image. RGB = 3 channels, Grayscale = 1 channel.
+  numWorkers: 8 # Num of workers used in the dataloader
+  logsDir: "logs_drn_psa" # Directory where logs of each exp will be saved.
+  percentageDataForTraining: 1.0 # The percentage of images in dataset to be used for training.
+  percentageDataForValidation: 1.0
+
+  # Deeplab specific
+  outputStride: 8 # Possible values: [8, 16]. Output stride for deeplabv3 model. Smaller values give finer details in output mask.
+  epochSize: 1 # After these many epochs, change learning rate
+
+  continueTraining: False # If true, continue training from a checkpoint
+  #pathPrevCheckpoint: "checkpoints/mask/drn-256p-noideawhichinstance/checkpoint-epoch-0098.pth" # Path to .pth checkpoint file to load to continue training from
+  initOptimizerFromCheckpoint: False # Re-Initialize optimizer's state from checkpoint. NOTE: when this is enabled, value of learningRate will be overridden with value from checkpoint.
+  loadEpochNumberFromCheckpoint: False # If true, the epoch/iter numbering will start from the checkpoint's last epoch num.
+
+  saveModelInterval: 2 # Save the model checkpoints every N epochs
+  saveOptimizerState: 1
+
+  # Optimizer Params
+  # optimAdam:
+  #   learningRate: 0.0001
+  #   weightDecay: 0 # Other values: 0.0001
+  optimSgd:
+    learningRate: 1e-2
+    momentum: 0.9
+    weight_decay: 1e-4
+  lrScheduler: "PolyLR" # Possible Values: ['', 'StepLR', 'ReduceLROnPlateau', 'PolyLR']
+  lrSchedulerStep:
+    step_size: 7
+    gamma: 0.1
+  lrSchedulerPlateau:
+    factor: 0.8
+    patience: 25
+    verbose: True
+  lrSchedulerPoly:
+    power: 0.25
+
+# eval.py Config - Validation/Testing Inference
+eval:
+  # Synthetic datasets with ground truth labels
+  # Used as validation set
+  datasetsSynthetic:
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-test/glass-square-potion-test/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-test/glass-square-potion-test/segmentation-masks'
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-test/glass-round-potion-test/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-test/glass-round-potion-test/segmentation-masks'
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-test/star-bath-bomb-test/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-test/star-bath-bomb-test/segmentation-masks'
+    - images: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-test/tree-bath-bomb-test/rgb-imgs'
+      labels: '/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/synthetic-test/tree-bath-bomb-test/segmentation-masks'
+
+  # Datasets of real images, no labels available
+  # Used as Test set
+  datasetsReal:
+    # - images: "datasets-transparent/studio_pics_sorted/selected_test/d415"
+    #   labels: "datasets-transparent/studio_pics_sorted/selected_test/d415"
+    # - images: "datasets-transparent/studio_pics_sorted/selected_test/d435"
+    #   labels: "datasets-transparent/studio_pics_sorted/selected_test/d435"
+    # - images: "datasets-transparent/studio_pics_sorted/selected_val/d435"
+    #   labels: "datasets-transparent/studio_pics_sorted/selected_val/d435"
+
+  datasetsMatterport:
+    # - images: 'data/datasets/matterport3d/train/matterport_rgb/v1/scans'
+    #   labels: 'data/datasets/matterport3d/train/matterport_render_normal'
+
+  # Params
+  saveResultImages: False
+  model: "drn" # Possible values: ['deeplab_xception', 'deeplab_resnet', 'drn', 'drn_psa']
+  numClasses: 2
+  batchSize: 1
+  imgHeight: 256
+  imgWidth: 256
+  #os: 8
+  numWorkers: 4 # Num of workers used in the dataloader
+  pathWeightsFile: "/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-checkpoints/mask_segmentation/checkpoint_mask.pth" # Path to the checkpoint to be loaded
+  resultsDir: "/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-checkpoints/mask_segmentation/results/"
