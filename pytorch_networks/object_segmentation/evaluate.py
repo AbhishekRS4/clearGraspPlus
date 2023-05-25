@@ -33,8 +33,8 @@ def evaluate(model, test_loader, device, num_classes, precision=5, dir_results_t
     num_images = len(test_loader.dataset)  # Num of total images
 
     with torch.no_grad():
-        for ii, sample_batched in enumerate(tqdm(test_loader)):
-            inputs, labels, image_path = sample_batched
+        for ii, batch in enumerate(tqdm(test_loader)):
+            inputs, labels, image_path = batch
 
             # Forward pass of the mini-batch
             inputs = inputs.to(device, dtype=torch.float)
