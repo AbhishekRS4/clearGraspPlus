@@ -123,7 +123,7 @@ class SurfaceNormalsDataset(Dataset):
         else:
             _mask_tensor = torch.ones((1, _img_tensor.shape[1], _img_tensor.shape[2]), dtype=torch.float32)
 
-        return _img_tensor, _label_tensor, _mask_tensor
+        return _img_tensor, _label_tensor, _mask_tensor, image_path
 
     def _create_lists_filenames(self, images_dir, labels_dir, masks_dir):
         '''Creates a list of filenames of images and labels each in dataset

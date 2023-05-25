@@ -107,7 +107,7 @@ def train_loop(model, train_loader, optimizer, criterion, device, model_type, nu
     num_batches = len(train_loader)
 
     for iter_num, batch in enumerate(tqdm(train_loader)):
-        inputs, labels, masks = batch
+        inputs, labels, masks, _ = batch
         inputs = inputs.to(device)
         labels = labels.to(device)
 
@@ -162,7 +162,7 @@ def validation_loop(model, validation_loader, criterion, device, num_classes, ba
 
     with torch.no_grad():
         for iter_num, batch in enumerate(tqdm(validation_loader)):
-            inputs, labels, masks = batch
+            inputs, labels, masks, _ = batch
             inputs = inputs.to(device)
             labels = labels.to(device)
 
