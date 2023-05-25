@@ -94,7 +94,7 @@ class OcclusionBoundaryDataset(Dataset):
         else:
             _label_tensor = torch.zeros((1, _img_tensor.shape[1], _img_tensor.shape[2]), dtype=torch.float32)
 
-        return _img_tensor, _label_tensor
+        return _img_tensor, _label_tensor, image_path
 
     def _create_lists_filenames(self, images_dir, labels_dir):
         '''Creates a list of filenames of images and labels each in dataset
