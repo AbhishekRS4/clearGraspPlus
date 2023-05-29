@@ -69,7 +69,7 @@ def evaluate(model, test_loader, device, num_classes,
 
                 #print(inputs.shape, normal_vectors_norm.shape, labels.shape, mask_tensor.shape)
 
-                # save grid image with input, prediction and label
+                # save resulting grid image with input, prediction and label
                 masks_3d = torch.stack((mask_tensor, mask_tensor, mask_tensor), dim=0)
                 """
                 print(inputs.squeeze().detach().cpu().shape,
