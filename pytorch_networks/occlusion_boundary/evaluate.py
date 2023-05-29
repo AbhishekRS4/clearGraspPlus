@@ -25,7 +25,8 @@ from dataset import get_augumentation_list, get_data_loader, load_concat_sub_dat
 
 def evaluate(model, test_loader, device, num_classes,
     dir_results_top=None, dir_sub_occ_weights_rgb=None,
-    dir_sub_occ_boundaries=None, dir_sub_overlay=None, precision=5, eps=1):
+    dir_sub_occ_boundaries=None, dir_sub_overlay=None, dir_sub_results=None,
+    precision=5, eps=1):
 
     model.eval()
     running_loss = 0.0
@@ -118,6 +119,29 @@ def evaluate(model, test_loader, device, num_classes,
                 )
                 imageio.imwrite(file_path_overlay, overlay_img)
 
+                # save resulting grid image with input, prediction and label
+                # print(pred_labels.shape)
+                # print(labels.shape)
+                output_prediction_rgb = utils.label_to_rgb(pred_labels)
+                label_rgb = utils.label_to_rgb(labels)
+
+                # print((inputs.detach().cpu().shape, output_prediction_rgb.shape, label_rgb.shape))
+                grid_image = torch.cat(
+                    (
+                        inputs.detach().cpu().squeeze(),
+                        output_prediction_rgb, label_rgb.squeeze()
+                    ),
+                    dim=2
+                )
+                grid_image = make_grid(grid_image, 1, normalize=True, scale_each=True)
+                numpy_grid = grid_image * 255  # Scale from range [0.0, 1.0] to [0, 255]
+                numpy_grid = numpy_grid.numpy().transpose(1, 2, 0).astype(np.uint8)
+                file_path_occ_boun_result = os.path.join(
+                    dir_results_top, dir_sub_results,
+                    f"{dataset_string}_{image_string}_result.png"
+                )
+                imageio.imwrite(file_path_occ_boun_result, numpy_grid)
+
 
     mean_iou = round(sum(running_iou) / num_images, precision)
 
@@ -151,6 +175,7 @@ def start_evaluation(ARGS):
     SUBDIR_OCC_WEIGHTS_RGB = "occ_weights_rgb"
     SUBDIR_OCC_BOUNDARIES = "occ_boundaries"
     SUBDIR_OVERLAY = "overlay"
+    SUBDIR_RESULT = "results"
 
     checkpoint_epoch_num = config.eval.pathWeightsFile.split("/")[-1].split(".")[0].split("_")[-1]
 
@@ -164,6 +189,7 @@ def start_evaluation(ARGS):
             os.makedirs(os.path.join(DIR_RESULTS, SUBDIR_OCC_WEIGHTS_RGB))
             os.makedirs(os.path.join(DIR_RESULTS, SUBDIR_OCC_BOUNDARIES))
             os.makedirs(os.path.join(DIR_RESULTS, SUBDIR_OVERLAY))
+            os.makedirs(os.path.join(DIR_RESULTS, SUBDIR_RESULT))
         except OSError as exc:
             if exc.errno != errno.EEXIST:
                 raise
@@ -250,11 +276,13 @@ def start_evaluation(ARGS):
     dir_sub_occ_weights_rgb = None
     dir_sub_occ_boundaries = None
     dir_sub_overlay = None
+    dir_sub_results = None
     if config.eval.saveResultImages:
         dir_results_top = DIR_RESULTS
         dir_sub_occ_weights_rgb = SUBDIR_OCC_WEIGHTS_RGB
         dir_sub_occ_boundaries = SUBDIR_OCC_BOUNDARIES
         dir_sub_overlay = SUBDIR_OVERLAY
+        dir_sub_results = SUBDIR_RESULT
 
     for key in dict_dataset_loader:
         print("\n" + key + ":")
@@ -276,6 +304,7 @@ def start_evaluation(ARGS):
             dir_sub_occ_weights_rgb=dir_sub_occ_weights_rgb,
             dir_sub_occ_boundaries=dir_sub_occ_boundaries,
             dir_sub_overlay=dir_sub_overlay,
+            dir_sub_results=dir_sub_results,
         )
 
         print(f"\nevaluation metrics, mean IoU: {mean_iou:.4f}")
