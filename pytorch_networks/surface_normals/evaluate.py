@@ -3,6 +3,7 @@ Evaluation script for surface normal prediction task
 """
 
 import os
+import cv2
 import sys
 import errno
 import oyaml
@@ -22,7 +23,10 @@ from loss_functions import *
 from dataset import get_augumentation_list, get_data_loader, load_concat_sub_datasets
 
 
-def evaluate(model, test_loader, device, num_classes, precision=5):
+def evaluate(model, test_loader, device, num_classes,
+    dir_results_top=None, dir_sub_results=None, dir_sub_normals_rgb=None,
+    dir_sub_normals_exr=None, precision=5):
+
     model.eval()
 
     running_loss_mean = 0.0
@@ -34,11 +38,11 @@ def evaluate(model, test_loader, device, num_classes, precision=5):
     num_images = len(test_loader.dataset)  # Num of total images
 
     with torch.no_grad():
-        for ii, sample_batched in enumerate(tqdm(test_loader)):
+        for ii, batch in enumerate(tqdm(test_loader)):
             # NOTE: In raw data, invalid surface normals are represented by [-1, -1, -1]. However, this causes
             #       problems during normalization of vectors. So they are represented as [0, 0, 0] in our dataloader output.
 
-            inputs, labels, masks = sample_batched
+            inputs, labels, masks, image_path = batch
 
             # Forward pass of the mini-batch
             inputs = inputs.to(device)
@@ -59,6 +63,56 @@ def evaluate(model, test_loader, device, num_classes, precision=5):
             running_percent_2 += percent_2
             running_percent_3 += percent_3
 
+            if dir_results_top is not None:
+                dataset_string = image_path[0].split("/")[-3]
+                image_string = image_path[0].split("/")[-1].split(".")[0]
+
+                #print(inputs.shape, normal_vectors_norm.shape, labels.shape, mask_tensor.shape)
+
+                # save grid image with input, prediction and label
+                masks_3d = torch.stack((mask_tensor, mask_tensor, mask_tensor), dim=0)
+                """
+                print(inputs.squeeze().detach().cpu().shape,
+                    normal_vectors_norm.squeeze().detach().cpu().shape,
+                    labels.squeeze().detach().cpu().shape,
+                    masks_3d.squeeze().shape
+                )
+                """
+                grid_image = make_grid(
+                    [
+                        inputs.squeeze().detach().cpu(),
+                        normal_vectors_norm.squeeze().detach().cpu(),
+                        labels.squeeze().detach().cpu(),
+                        masks_3d.squeeze()
+                    ],
+                    4, normalize=True, scale_each=True)
+
+                numpy_grid = grid_image * 255  # Scale from range [0.0, 1.0] to [0, 255]
+                numpy_grid = numpy_grid.numpy().transpose(1, 2, 0).astype(np.uint8)
+
+                file_path_result = os.path.join(
+                    dir_results_top, dir_sub_results,
+                    f"{dataset_string}_{image_string}_sur_normals_result.png"
+                )
+                imageio.imwrite(file_path_result, numpy_grid)
+
+                output_rgb = utils.normal_to_rgb(
+                    normal_vectors_norm.squeeze().detach().cpu().numpy().transpose((1, 2, 0))
+                )
+                output_rgb *= 255
+                output_rgb = output_rgb.astype(np.uint8)
+                output_rgb = cv2.resize(output_rgb, (512, 288), interpolation=cv2.INTER_LINEAR)
+                file_path_normal_rgb = os.path.join(
+                    dir_results_top, dir_sub_normals_rgb,
+                    f"{dataset_string}_{image_string}_sur_normals_rgb.png"
+                )
+                file_path_normal_exr = os.path.join(
+                    dir_results_top, dir_sub_normals_exr,
+                    f"{dataset_string}_{image_string}_sur_normal.exr"
+                )
+                imageio.imwrite(file_path_normal_rgb, output_rgb)
+                utils.exr_saver(file_path_normal_exr, normal_vectors_norm.squeeze().detach().cpu().numpy())
+                #sys.exit(0)
 
     loss_mean = running_loss_mean / num_images
     loss_median = running_loss_median / num_images
@@ -98,18 +152,20 @@ def start_evaluation(ARGS):
     # Check for results store dir
     # Create directory to save results
     SUBDIR_RESULT = "results"
-    SUBDIR_OUTLINES = "outlines_files"
+    SUBDIR_NORMALS_RGB = "normals_rgb"
+    SUBDIR_NORMALS_EXR = "normals_exr"
     checkpoint_epoch_num = config.eval.pathWeightsFile.split("/")[-1].split(".")[0].split("_")[-1]
 
     DIR_RESULTS_ROOT = config.eval.resultsDir
-    DIR_RESULTS = os.path.join(DIR_RESULTS_ROOT, f"occ_bound_epoch_{checkpoint_epoch_num}")
+    DIR_RESULTS = os.path.join(DIR_RESULTS_ROOT, f"sur_normal_{checkpoint_epoch_num}")
     if not os.path.isdir(DIR_RESULTS):
         os.makedirs(DIR_RESULTS)
 
     if config.eval.saveResultImages:
         try:
             os.makedirs(os.path.join(DIR_RESULTS, SUBDIR_RESULT))
-            os.makedirs(os.path.join(DIR_RESULTS, SUBDIR_MASKS))
+            os.makedirs(os.path.join(DIR_RESULTS, SUBDIR_NORMALS_RGB))
+            os.makedirs(os.path.join(DIR_RESULTS, SUBDIR_NORMALS_EXR))
         except OSError as exc:
             if exc.errno != errno.EEXIST:
                 raise
@@ -203,6 +259,16 @@ def start_evaluation(ARGS):
     print("\nInference - surface normal prediction task")
     print("=" * 50 + "\n")
 
+    dir_results_top = None
+    dir_sub_results = None
+    dir_sub_normals_rgb = None
+    dir_sub_normals_exr = None
+    if config.eval.saveResultImages:
+        dir_results_top = DIR_RESULTS
+        dir_sub_results = SUBDIR_RESULT
+        dir_sub_normals_rgb = SUBDIR_NORMALS_RGB
+        dir_sub_normals_exr = SUBDIR_NORMALS_EXR
+
     for key in dict_dataset_loader:
         print("\n" + key + ":")
         print("=" * 30)
@@ -219,6 +285,10 @@ def start_evaluation(ARGS):
             test_loader_current,
             device,
             config.eval.numClasses,
+            dir_results_top=dir_results_top,
+            dir_sub_results=dir_sub_results,
+            dir_sub_normals_rgb=dir_sub_normals_rgb,
+            dir_sub_normals_exr=dir_sub_normals_exr,
         )
 
         csv_writer.write_row(
