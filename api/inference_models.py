@@ -36,6 +36,11 @@ class InferenceOutlines():
             print('Creating DRN model for outlines and loading checkpoint')
             self.model = deeplab_masks.DeepLab(num_classes=3, backbone='drn', sync_bn=True,
                                                freeze_bn=True)  # output stride is 8 for drn
+        elif outlinesModel == 'drn_psa':
+            print('Creating DRN_PSA model for outlines and loading checkpoint')
+            self.model = deeplab_masks.DeepLab(
+                num_classes=3, backbone='drn_psa', sync_bn=True, freeze_bn=True)
+            # output stride is 8 for drn_psa
         else:
             raise NotImplementedError(
                 'Model may only be "drn", "deeplab_resnet" or unet". Given model is: {}'.format(outlinesModel))
@@ -149,6 +154,11 @@ class InferenceNormals():
             print('Creating DRN model for normals and loading checkpoint')
             self.model = deeplab.DeepLab(num_classes=3, backbone='drn', sync_bn=True,
                                          freeze_bn=False)  # output stride is 8 for drn
+        elif normalsModel == 'drn_psa':
+            print('Creating DRN_PSA model for normals and loading checkpoint')
+            self.model = deeplab.DeepLab(
+                num_classes=3, backbone="drn_psa", sync_bn=True, freeze_bn=False)
+                # output stride is 8 for drn_psa
         else:
             raise NotImplementedError(
                 'Model may only be "unet" or "deeplab_resnet". Given model is: {}'.format(normalsModel))
@@ -285,6 +295,10 @@ class InferenceMasks():
             print('Creating DRN model for masks and loading checkpoint')
             self.model = deeplab_masks.DeepLab(num_classes=2, backbone='drn', sync_bn=True,
                                                freeze_bn=False)  # output stride is 8 for drn
+        elif masksModel == 'drn_psa':
+            print('Creating DRN_PSA model for masks and loading checkpoint')
+            self.model = deeplab_masks.DeepLab(num_classes=2, backbone="drn_psa", sync_bn=True,
+                                    freeze_bn=False)  # output stride is 8 for drn_psa
         else:
             raise NotImplementedError(
                 'Model may only be "unet" or "deeplab_resnet". Given model is: {}'.format(masksModel))
