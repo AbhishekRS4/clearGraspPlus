@@ -1,41 +1,41 @@
-#!/usr/bin/env python3
-'''Script to run Depth Completion on Synthetic and Real datasets, visualizing the results and computing the error metrics.
+'''
+Script to run Depth Completion on Synthetic and Real datasets, visualizing the results and computing the error metrics.
 This will save all intermediate outputs like surface normals, etc, create a collage of all the inputs and outputs and
 create pointclouds from the input, modified input and output depth images.
 '''
-import argparse
-import csv
-import glob
+
 import os
-import shutil
 import sys
+import csv
+import cv2
+import glob
+import oyaml
+import torch
+import shutil
+import imageio
+import argparse
+import termcolor
 import itertools
+
+import numpy as np
 
 # Importing Pytorch before Open3D can cause unknown "invalid pointer" error
 import open3d as o3d
+from pyats.datastructures import NestedAttrDict
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from api import depth_completion_api
+
 from api import utils as api_utils
+from api import depth_completion_api
 
-import attrdict
-import imageio
-import termcolor
-import yaml
-import torch
-import cv2
-import numpy as np
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Run eval of depth completion on synthetic data')
-    parser.add_argument('-c', '--configFile', required=True, help='Path to config yaml file', metavar='path/to/config')
-    parser.add_argument('-m', '--maskInputDepth', action="store_true", help='Whether we should mask out objects in input depth')
-    args = parser.parse_args()
-
+def evaluate_depth_completion(ARGS):
     # Load Config File
-    CONFIG_FILE_PATH = args.configFile
-    with open(CONFIG_FILE_PATH) as fd:
-        config_yaml = yaml.safe_load(fd)
-    config = attrdict.AttrDict(config_yaml)
+    FILE_PATH_CONFIG = ARGS.config_file
+    with open(FILE_PATH_CONFIG) as fd_config_yaml:
+        # Returns an ordered dict. Used for printing
+        config_yaml = oyaml.load(fd_config_yaml, Loader=oyaml.Loader)
+        config_dict = dict(config_yaml)
+
+    config = NestedAttrDict(**config_dict)
 
     # Create directory to save results
     RESULTS_ROOT_DIR = config.resultsDir
@@ -49,96 +49,82 @@ if __name__ == '__main__':
             os.makedirs(results_dir)
     else:
         os.makedirs(results_dir)
-    shutil.copy2(CONFIG_FILE_PATH, os.path.join(results_dir, 'config.yaml'))
+    shutil.copy2(FILE_PATH_CONFIG, os.path.join(results_dir, 'config.yaml'))
     print('\nSaving results to folder: ' + termcolor.colored('"{}"\n'.format(results_dir), 'green'))
 
     # Init depth completion API
     outputImgHeight = int(config.depth2depth.yres)
     outputImgWidth = int(config.depth2depth.xres)
-    # if config.files.camera_intrinsics is not None or config.files.camera_intrinsics is not '':
-    #     print(colored('\nUsing camera intrinsics from yaml file of real camera!\n'), 'green')
-    #     CONFIG_FILE_PATH = config.files.camera_intrinsics
-    #     if not os.path.isfile(CONFIG_FILE_PATH):
-    #         print('\nError: Camera Intrinsics yaml does not exist: {}\n'.format(CONFIG_FILE_PATH))
-    #         exit()
-    #     with open(CONFIG_FILE_PATH) as fd:
-    #         config_intr_yaml = yaml.safe_load(fd)
-    #         camera_params = attrdict.AttrDict(config_intr_yaml)
-    #     fx = (float(config.depth2depth.xres) / camera_params.xres) * camera_params.fx
-    #     fy = (float(config.depth2depth.yres) / camera_params.yres) * camera_params.fy
-    #     cx = (float(config.depth2depth.xres) / camera_params.xres) * camera_params.cx
-    #     cy = (float(config.depth2depth.yres) / camera_params.yres) * camera_params.cy
-    # else:
-    #     fx = int(config.depth2depth.fx)
-    #     fy = int(config.depth2depth.fy)
-    #     cx = int(config.depth2depth.cx)
-    #     cy = int(config.depth2depth.cy)
 
-    depthcomplete = depth_completion_api.DepthToDepthCompletion(normalsWeightsFile=config.normals.pathWeightsFile,
-                                                                outlinesWeightsFile=config.outlines.pathWeightsFile,
-                                                                masksWeightsFile=config.masks.pathWeightsFile,
-                                                                normalsModel=config.normals.model,
-                                                                outlinesModel=config.outlines.model,
-                                                                masksModel=config.masks.model,
-                                                                depth2depthExecutable=config.depth2depth.pathExecutable,
-                                                                outputImgHeight=outputImgHeight,
-                                                                outputImgWidth=outputImgWidth,
-                                                                fx=int(config.depth2depth.fx),
-                                                                fy=int(config.depth2depth.fy),
-                                                                cx=int(config.depth2depth.cx),
-                                                                cy=int(config.depth2depth.cy),
-                                                                filter_d=config.outputDepthFilter.d,
-                                                                filter_sigmaColor=config.outputDepthFilter.sigmaColor,
-                                                                filter_sigmaSpace=config.outputDepthFilter.sigmaSpace,
-                                                                maskinferenceHeight=config.masks.inferenceHeight,
-                                                                maskinferenceWidth=config.masks.inferenceWidth,
-                                                                normalsInferenceHeight=config.normals.inferenceHeight,
-                                                                normalsInferenceWidth=config.normals.inferenceWidth,
-                                                                outlinesInferenceHeight=config.normals.inferenceHeight,
-                                                                outlinesInferenceWidth=config.normals.inferenceWidth,
-                                                                min_depth=config.depthVisualization.minDepth,
-                                                                max_depth=config.depthVisualization.maxDepth,
-                                                                tmp_dir=results_dir)
+    depthcomplete = depth_completion_api.DepthToDepthCompletion(
+        normalsWeightsFile=config.normals.pathWeightsFile,
+        outlinesWeightsFile=config.outlines.pathWeightsFile,
+        masksWeightsFile=config.masks.pathWeightsFile,
+        normalsModel=config.normals.model,
+        outlinesModel=config.outlines.model,
+        masksModel=config.masks.model,
+        depth2depthExecutable=config.depth2depth.pathExecutable,
+        outputImgHeight=outputImgHeight,
+        outputImgWidth=outputImgWidth,
+        fx=int(config.depth2depth.fx),
+        fy=int(config.depth2depth.fy),
+        cx=int(config.depth2depth.cx),
+        cy=int(config.depth2depth.cy),
+        filter_d=config.outputDepthFilter.d,
+        filter_sigmaColor=config.outputDepthFilter.sigmaColor,
+        filter_sigmaSpace=config.outputDepthFilter.sigmaSpace,
+        maskinferenceHeight=config.masks.inferenceHeight,
+        maskinferenceWidth=config.masks.inferenceWidth,
+        normalsInferenceHeight=config.normals.inferenceHeight,
+        normalsInferenceWidth=config.normals.inferenceWidth,
+        outlinesInferenceHeight=config.normals.inferenceHeight,
+        outlinesInferenceWidth=config.normals.inferenceWidth,
+        min_depth=config.depthVisualization.minDepth,
+        max_depth=config.depthVisualization.maxDepth,
+        tmp_dir=results_dir
+    )
 
     # Create lists of input data
     rgb_file_list = []
     depth_file_list = []
     segmentation_masks_list = []
     gt_depth_file_list = []
-    for dataset in config.files:
+
+    for dict_dataset in config.files:
+        dataset = NestedAttrDict(**dict_dataset)
         EXT_COLOR_IMG = ['-transparent-rgb-img.jpg', '-rgb.jpg']  #'-rgb.jpg' - includes normals-rgb.jpg
         EXT_DEPTH_IMG = ['-depth-rectified.exr', '-transparent-depth-img.exr']
         EXT_DEPTH_GT = ['-depth-rectified.exr', '-opaque-depth-img.exr']
         EXT_MASK = ['-mask.png']
+
         for ext in EXT_COLOR_IMG:
             rgb_file_list += (sorted(glob.glob(os.path.join(dataset.image, '*' + ext))))
         for ext in EXT_DEPTH_IMG:
             depth_file_list += (sorted(glob.glob(os.path.join(dataset.depth, '*' + ext))))
         assert len(rgb_file_list) == len(depth_file_list), (
-            'number of rgb ({}) and depth images ({}) are not equal'.format(len(rgb_file_list), len(depth_file_list)))
+            f'number of rgb ({len(rgb_file_list)}) and depth images ({len(depth_file_list)}) are not equal')
 
         if dataset.masks is not None and dataset.masks != '':
             for ext in EXT_MASK:
                 segmentation_masks_list += (sorted(glob.glob(os.path.join(dataset.masks, '*' + ext))))
             assert len(rgb_file_list) == len(segmentation_masks_list), (
-                'number of rgb ({}) and masks ({}) are not equal'.format(len(rgb_file_list),
-                                                                         len(segmentation_masks_list)))
+                f'number of rgb ({len(rgb_file_list)}) and masks ({len(segmentation_masks_list)}) are not equal')
+
         if dataset.gt_depth is not None and dataset.gt_depth != '':
             for ext in EXT_DEPTH_GT:
                 gt_depth_file_list += (sorted(glob.glob(os.path.join(dataset.gt_depth, '*' + ext))))
             assert len(rgb_file_list) == len(gt_depth_file_list), (
-                'number of rgb ({}) and gt depth ({}) are not equal'.format(len(rgb_file_list),
-                                                                            len(gt_depth_file_list)))
+                f'number of rgb ({len(rgb_file_list)}) and gt depth ({len(gt_depth_file_list)}) are not equal')
 
-    print('Total Num of rgb_files:', len(rgb_file_list))
-    print('Total Num of depth_files:', len(depth_file_list))
-    print('Total Num of gt_depth_files:', len(gt_depth_file_list))
-    print('Total Num of segmentation_masks:', len(segmentation_masks_list))
+    print(f'Total Num of rgb_files: {len(rgb_file_list)}')
+    print(f'Total Num of depth_files: {len(depth_file_list)}')
+    print(f'Total Num of gt_depth_files: {len(gt_depth_file_list)}')
+    print(f'Total Num of segmentation_masks: {len(segmentation_masks_list)}')
     assert len(rgb_file_list) > 0, ('No files found in given directories')
 
     # Create CSV File to store error metrics
     csv_filename = 'computed_errors.csv'
-    field_names = ["Image Num", "RMSE", "REL", "MAE", "Delta 1.25", "Delta 1.25^2", "Delta 1.25^3"]
+    field_names = ["Image_Num", "RMSE", "REL", "MAE", "Delta_1.25", "Delta_1.25^2", "Delta_1.25^3"]
     with open(os.path.join(results_dir, csv_filename), 'w') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=field_names, delimiter=',')
         writer.writeheader()
@@ -153,7 +139,6 @@ if __name__ == '__main__':
     sq_rel_mean = 0.0
 
     for i in range(len(rgb_file_list)):
-
         # Run Depth Completion
         color_img = imageio.imread(rgb_file_list[i])
         input_depth = api_utils.exr_loader(depth_file_list[i], ndim=1)
@@ -172,9 +157,10 @@ if __name__ == '__main__':
                 smoothness_weight=float(config.depth2depth.smoothness_weight),
                 tangent_weight=float(config.depth2depth.tangent_weight),
                 mode_modify_input_depth=config.modifyInputDepth.mode,
-                dilate_mask=True)
+                dilate_mask=True
+            )
         except depth_completion_api.DepthCompletionError as e:
-            print('Depth Completion Failed:\n  {}\n  ...skipping image {}'.format(e, i))
+            print(f'Depth Completion Failed:\n  {e}\n  ...skipping image {i}')
             continue
 
         # Compute Errors in Depth Estimation over the Masked Area
@@ -201,13 +187,13 @@ if __name__ == '__main__':
 
         metrics = depthcomplete.compute_errors(depth_gt, output_depth, mask_valid_region)
 
-        print('\nImage {:09d} / {}:'.format(i, len(rgb_file_list) - 1))
-        print('{:>15}:'.format('rmse'), metrics['rmse'])
-        print('{:>15}:'.format('abs_rel'), metrics['abs_rel'])
-        print('{:>15}:'.format('mae'), metrics['mae'])
-        print('{:>15}:'.format('a1.05'), metrics['a1'])
-        print('{:>15}:'.format('a1.10'), metrics['a2'])
-        print('{:>15}:'.format('a1.25'), metrics['a3'])
+        print(f'\nImage: {i:09d} / {len(rgb_file_list) - 1}')
+        print(f'rmse: {metrics["rmse"]:>15}')
+        print(f'abs_rel: {metrics["abs_rel"]:>15}')
+        print(f'mae: {metrics["mae"]:>15}')
+        print(f'a1.05: {metrics["a1"]:>15}')
+        print(f'a2.10: {metrics["a2"]:>15}')
+        print(f'a3.25: {metrics["a3"]:>15}')
 
         # Write the data into a csv file
         with open(os.path.join(results_dir, csv_filename), 'a', newline='') as csvfile:
@@ -230,9 +216,8 @@ if __name__ == '__main__':
             root_dir=results_dir,
             files_prefix=i,
             min_depth=config.depthVisualization.minDepth,
-            max_depth=config.depthVisualization.maxDepth)
-        # print('    Mean Absolute Error in output depth (if Synthetic Data)   = {:.4f} cm'.format(error_output_depth))
-        # print('    Mean Absolute Error in filtered depth (if Synthetic Data) = {:.4f} cm'.format(error_filtered_output_depth))
+            max_depth=config.depthVisualization.maxDepth
+        )
 
     # Calculate Mean Errors over entire Dataset
     a1_mean = round(a1_mean / len(rgb_file_list), 2)
@@ -244,15 +229,35 @@ if __name__ == '__main__':
     sq_rel_mean = round(sq_rel_mean / len(rgb_file_list), 3)
 
     print('\n\nMean Error Stats for Entire Dataset:')
-    print('{:>15}:'.format('rmse_mean'), rmse_mean)
-    print('{:>15}:'.format('abs_rel_mean'), abs_rel_mean)
-    print('{:>15}:'.format('mae_mean'), mae_mean)
-    print('{:>15}:'.format('a1.05_mean'), a1_mean)
-    print('{:>15}:'.format('a1.10_mean'), a2_mean)
-    print('{:>15}:'.format('a1.25_mean'), a3_mean)
+    print(f'rmse_mean: {rmse_mean:>15}')
+    print(f'abs_rel_mean: {abs_rel_mean:>15}')
+    print(f'mae_mean: {mae_mean:>15}')
+    print(f'a1_mean: {a1_mean:>15}')
+    print(f'a2_mean: {a2_mean:>15}')
+    print(f'a3_mean: {a3_mean:>15}')
 
     # Write the data into a csv file
     with open(os.path.join(results_dir, csv_filename), 'a', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=field_names, delimiter=',')
         row_data = ['MEAN', rmse_mean, abs_rel_mean, mae_mean, a1_mean, a2_mean, a3_mean]
         writer.writerow(dict(zip(field_names, row_data)))
+
+    return
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='Run eval of depth completion on synthetic data',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument('-c', '--config_file', required=True,
+        help='Path to config yaml file', metavar='path/to/config')
+    parser.add_argument('-m', '--mask_input_depth', action="store_true",
+        help='Whether we should mask out objects in input depth')
+
+    ARGS = parser.parse_args()
+    evaluate_depth_completion(ARGS)
+    return
+
+if __name__ == '__main__':
+    main()
