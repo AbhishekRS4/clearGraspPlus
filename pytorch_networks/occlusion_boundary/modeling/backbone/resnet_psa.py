@@ -138,7 +138,7 @@ class Bottleneck(nn.Module):
         return out
 
 
-class ResNetPSA(nn.Module):
+class ResNet34PSA(nn.Module):
     def __init__(
         self,
         layers: List[int],
@@ -151,7 +151,7 @@ class ResNetPSA(nn.Module):
         norm_layer=None,
     ):
 
-        super(CustomResNet, self).__init__()
+        super(ResNet34PSA, self).__init__()
 
         self.dict_encoder_features = {}
 
@@ -181,8 +181,8 @@ class ResNetPSA(nn.Module):
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         self.layer1 = self._make_layer(block, 64, layers[0])
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2, dilate=replace_stride_with_dilation[0])
-        self.layer3 = self._make_layer(block, 256, layers[2], stride=2, dilate=replace_stride_with_dilation[1])
-        self.layer4 = self._make_layer(block, 512, layers[3], stride=2, dilate=replace_stride_with_dilation[2])
+        self.layer3 = self._make_layer(block, 256, layers[2], stride=1, dilate=replace_stride_with_dilation[1])
+        self.layer4 = self._make_layer(block, 512, layers[3], stride=1, dilate=replace_stride_with_dilation[2])
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         # self.fc = nn.Linear(512 * block.expansion, num_classes)
 
@@ -248,16 +248,16 @@ class ResNetPSA(nn.Module):
         x = self.relu(x)
         x = self.maxpool(x)
 
-        self.dict_encoder_features["block_1"] = x
-
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
+        low_level_feat = x
+
         x = self.layer4(x)
 
-        return x
+        return x, low_level_feat
 
 
-def ResNet34PSA(layers=[3, 4, 6, 3], block=BasicBlock):
-    model = ResNetPSA(layers, block)
+def resnet34_psa(layers=[3, 4, 6, 3], block=BasicBlock):
+    model = ResNet34PSA(layers, block)
     return model

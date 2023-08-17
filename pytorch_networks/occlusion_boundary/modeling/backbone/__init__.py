@@ -4,7 +4,7 @@ def build_backbone(backbone, output_stride, BatchNorm):
     if backbone == 'resnet':
         return resnet.ResNet101(output_stride, BatchNorm)
     elif backbone == 'resnet34_psa':
-        return resnet.ResNet34PSA()
+        return resnet_psa.resnet34_psa()
     elif backbone == 'xception':
         return xception.AlignedXception(output_stride, BatchNorm)
     elif backbone == 'drn':
