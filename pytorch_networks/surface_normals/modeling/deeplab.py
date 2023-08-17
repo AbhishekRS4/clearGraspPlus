@@ -10,7 +10,7 @@ class DeepLab(nn.Module):
     def __init__(self, backbone='resnet', output_stride=16, num_classes=21,
                  sync_bn=True, freeze_bn=False):
         super(DeepLab, self).__init__()
-        if backbone == 'drn' or backbone == 'drn_psa':
+        if backbone == 'drn' or backbone == 'drn_psa' or backbone == 'resnet34_psa':
             output_stride = 8
 
         if sync_bn == True:
