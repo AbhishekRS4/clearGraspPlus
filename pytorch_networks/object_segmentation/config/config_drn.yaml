@@ -127,5 +127,5 @@ eval:
   imgWidth: 256
   #os: 8
   numWorkers: 4 # Num of workers used in the dataloader
-  pathWeightsFile: "/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-checkpoints/mask_segmentation/checkpoint_mask.pth" # Path to the checkpoint to be loaded
-  resultsDir: "/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-checkpoints/mask_segmentation/results/"
+  pathWeightsFile: "/home/abhishek/Desktop/RUG/ai_master_thesis/my_checkpoints/drn/object_segmentation/obj_seg_epoch_30.pth" # Path to the checkpoint to be loaded
+  resultsDir: "/home/abhishek/Desktop/RUG/ai_master_thesis/my_checkpoints/drn/object_segmentation/results/"
