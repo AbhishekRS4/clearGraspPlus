@@ -34,7 +34,7 @@ class _ASPPModule(nn.Module):
 class ASPP(nn.Module):
     def __init__(self, backbone, output_stride, BatchNorm):
         super(ASPP, self).__init__()
-        if backbone == 'drn' or backbone == 'drn_psa':
+        if backbone == 'drn' or backbone == 'drn_psa' or backbone == 'resnet34_psa':
             inplanes = 512
         elif backbone == 'mobilenet':
             inplanes = 320
