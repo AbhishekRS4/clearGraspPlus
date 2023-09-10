@@ -220,7 +220,8 @@ def start_training(ARGS):
 
     # Create a new directory to save logs
     runs = sorted(glob.glob(os.path.join(config.train.logsDir, "surface_normals", "exp-*")))
-    prev_run_id = int(runs[-1].split("-")[-1]) if runs else 0
+    #prev_run_id = int(runs[-1].split("-")[-1]) if runs else 0
+    prev_run_id = len(runs)
     DIR_CHECKPOINT = os.path.join(config.train.logsDir, "surface_normals", f"exp-{prev_run_id+1}")
     FILE_NAME_LOGS_CSV = os.path.join(DIR_CHECKPOINT, "train_logs.csv")
     os.makedirs(DIR_CHECKPOINT)
@@ -361,6 +362,12 @@ def start_training(ARGS):
                                 freeze_bn=False)
     elif config.train.model == 'deeplab_resnet':
         model = deeplab.DeepLab(num_classes=config.train.numClasses, backbone='resnet', sync_bn=True,
+                                freeze_bn=False)
+    elif config.train.model == 'resnet34_psa':
+        model = deeplab.DeepLab(num_classes=config.train.numClasses, backbone='resnet34_psa', sync_bn=True,
+                                freeze_bn=False)
+    elif config.train.model == 'resnet50_psa':
+        model = deeplab.DeepLab(num_classes=config.train.numClasses, backbone='resnet50_psa', sync_bn=True,
                                 freeze_bn=False)
     elif config.train.model == 'drn':
         model = deeplab.DeepLab(num_classes=config.train.numClasses, backbone='drn', sync_bn=True,

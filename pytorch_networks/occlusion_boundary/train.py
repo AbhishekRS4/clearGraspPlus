@@ -307,6 +307,12 @@ def start_training(ARGS):
     elif config.train.model == 'deeplab_resnet':
         model = deeplab.DeepLab(num_classes=config.train.numClasses, backbone='resnet', sync_bn=True,
                                 freeze_bn=False)
+    elif config.train.model == 'resnet34_psa':
+        model = deeplab.DeepLab(num_classes=config.train.numClasses, backbone='resnet34_psa', sync_bn=True,
+                                freeze_bn=False)
+    elif config.train.model == 'resnet50_psa':
+        model = deeplab.DeepLab(num_classes=config.train.numClasses, backbone='resnet50_psa', sync_bn=True,
+                                freeze_bn=False)
     elif config.train.model == 'drn':
         model = deeplab.DeepLab(num_classes=config.train.numClasses, backbone='drn', sync_bn=True,
                                 freeze_bn=False)  # output stride is 8 for drn
