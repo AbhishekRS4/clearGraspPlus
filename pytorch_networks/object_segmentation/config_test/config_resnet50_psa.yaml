@@ -107,10 +107,10 @@ eval:
   # Datasets of real images, no labels available
   # Used as Test set
   datasetsReal:
-    - images: "/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/real-test/d415"
-      labels: "/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/real-test/d415"
-    - images: "/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/real-test//d435"
-      labels: "/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/real-test//d435"
+    - images: "/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/real-test/d415/"
+      labels: "/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/real-test/d415/"
+    - images: "/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/real-test/d435/"
+      labels: "/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/real-test/d435/"
     - images: "/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/real-val/d435/"
       labels: "/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/real-val/d435/"
 
@@ -123,5 +123,5 @@ eval:
   imgWidth: 256
   #os: 8
   numWorkers: 4 # Num of workers used in the dataloader
-  pathWeightsFile: "/home/abhishek/Desktop/RUG/ai_master_thesis/my_checkpoints/resnet50_psa/object_segmentation/obj_seg_epoch_180.pth" # Path to the checkpoint to be loaded
+  pathWeightsFile: "/home/abhishek/Desktop/RUG/ai_master_thesis/my_checkpoints/resnet50_psa/object_segmentation/obj_seg_epoch_210.pth" # Path to the checkpoint to be loaded
   resultsDir: "/home/abhishek/Desktop/RUG/ai_master_thesis/my_checkpoints/resnet50_psa/object_segmentation/results/"
