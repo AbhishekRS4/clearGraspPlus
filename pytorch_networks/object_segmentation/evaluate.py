@@ -163,7 +163,7 @@ def start_evaluation(ARGS):
             input_only=None,
         )
 
-    if (db_test_syn is not None) and (db_test_real is not None):
+    if (db_test_syn is None) and (db_test_real is None):
         raise ValueError("No valid datasets provided to run inference on!")
 
     if db_test_syn:
@@ -182,6 +182,12 @@ def start_evaluation(ARGS):
     elif config.eval.model == "drn_psa":
         model = deeplab.DeepLab(num_classes=config.eval.numClasses, backbone="drn_psa", sync_bn=True,
                                 freeze_bn=False)  # output stride is 8 for drn_psa
+    elif config.eval.model == "resnet34_psa":
+        model = deeplab.DeepLab(num_classes=config.train.numClasses, backbone="resnet34_psa", sync_bn=True,
+                                freeze_bn=False)
+    elif config.eval.model == "resnet50_psa":
+        model = deeplab.DeepLab(num_classes=config.train.numClasses, backbone="resnet50_psa", sync_bn=True,
+                                freeze_bn=False)
     else:
         raise ValueError(f"Invalid model ({config.eval.model}) in config file")
 
