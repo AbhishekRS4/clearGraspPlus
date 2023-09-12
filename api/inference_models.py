@@ -41,6 +41,11 @@ class InferenceOutlines():
             self.model = deeplab_masks.DeepLab(
                 num_classes=3, backbone='drn_psa', sync_bn=True, freeze_bn=True)
             # output stride is 8 for drn_psa
+        elif outlinesModel == 'resnet50_psa':
+            print('Creating ResNet50_PSA model for outlines and loading checkpoint')
+            self.model = deeplab_masks.DeepLab(
+                num_classes=3, backbone='resnet50_psa', sync_bn=True, freeze_bn=True)
+            # output stride is 8 for resnet50_psa
         else:
             raise NotImplementedError(
                 'Model may only be "drn", "deeplab_resnet" or unet". Given model is: {}'.format(outlinesModel))
@@ -159,6 +164,11 @@ class InferenceNormals():
             self.model = deeplab.DeepLab(
                 num_classes=3, backbone="drn_psa", sync_bn=True, freeze_bn=False)
                 # output stride is 8 for drn_psa
+        elif normalsModel == 'resnet50_psa':
+            print('Creating ResNet50_PSA model for normals and loading checkpoint')
+            self.model = deeplab.DeepLab(
+                num_classes=3, backbone="resnet50_psa", sync_bn=True, freeze_bn=False)
+            # output stride is 8 for resnet50_psa
         else:
             raise NotImplementedError(
                 'Model may only be "unet" or "deeplab_resnet". Given model is: {}'.format(normalsModel))
@@ -299,6 +309,10 @@ class InferenceMasks():
             print('Creating DRN_PSA model for masks and loading checkpoint')
             self.model = deeplab_masks.DeepLab(num_classes=2, backbone="drn_psa", sync_bn=True,
                                     freeze_bn=False)  # output stride is 8 for drn_psa
+        elif masksModel == 'resnet50_psa':
+            print('Creating ResNet50_PSA model for masks and loading checkpoint')
+            self.model = deeplab_masks.DeepLab(num_classes=2, backbone="resnet50_psa", sync_bn=True,
+                                    freeze_bn=False)  # output stride is 8 for resnet50_psa
         else:
             raise NotImplementedError(
                 'Model may only be "unet" or "deeplab_resnet". Given model is: {}'.format(masksModel))
