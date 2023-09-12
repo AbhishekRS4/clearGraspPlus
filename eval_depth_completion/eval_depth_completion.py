@@ -187,7 +187,7 @@ def evaluate_depth_completion(ARGS):
 
         metrics = depthcomplete.compute_errors(depth_gt, output_depth, mask_valid_region)
 
-        print(f'\nImage: {i:09d} / {len(rgb_file_list) - 1}')
+        print(f'\nImage: {i:03d} / {len(rgb_file_list) - 1}')
         print(f'rmse: {metrics["rmse"]:>15}')
         print(f'abs_rel: {metrics["abs_rel"]:>15}')
         print(f'mae: {metrics["mae"]:>15}')
@@ -220,21 +220,21 @@ def evaluate_depth_completion(ARGS):
         )
 
     # Calculate Mean Errors over entire Dataset
-    a1_mean = round(a1_mean / len(rgb_file_list), 2)
-    a2_mean = round(a2_mean / len(rgb_file_list), 2)
-    a3_mean = round(a3_mean / len(rgb_file_list), 2)
-    rmse_mean = round(rmse_mean / len(rgb_file_list), 3)
-    abs_rel_mean = round(abs_rel_mean / len(rgb_file_list), 3)
-    mae_mean = round(mae_mean / len(rgb_file_list), 3)
-    sq_rel_mean = round(sq_rel_mean / len(rgb_file_list), 3)
+    a1_mean = round(a1_mean / len(rgb_file_list), 5)
+    a2_mean = round(a2_mean / len(rgb_file_list), 5)
+    a3_mean = round(a3_mean / len(rgb_file_list), 5)
+    rmse_mean = round(rmse_mean / len(rgb_file_list), 5)
+    abs_rel_mean = round(abs_rel_mean / len(rgb_file_list), 5)
+    mae_mean = round(mae_mean / len(rgb_file_list), 5)
+    sq_rel_mean = round(sq_rel_mean / len(rgb_file_list), 5)
 
     print('\n\nMean Error Stats for Entire Dataset:')
-    print(f'rmse_mean: {rmse_mean:>15}')
-    print(f'abs_rel_mean: {abs_rel_mean:>15}')
-    print(f'mae_mean: {mae_mean:>15}')
-    print(f'a1_mean: {a1_mean:>15}')
-    print(f'a2_mean: {a2_mean:>15}')
-    print(f'a3_mean: {a3_mean:>15}')
+    print(f'rmse_mean: {rmse_mean}')
+    print(f'abs_rel_mean: {abs_rel_mean}')
+    print(f'mae_mean: {mae_mean}')
+    print(f'a1_mean: {a1_mean}')
+    print(f'a2_mean: {a2_mean}')
+    print(f'a3_mean: {a3_mean}')
 
     # Write the data into a csv file
     with open(os.path.join(results_dir, csv_filename), 'a', newline='') as csvfile:
