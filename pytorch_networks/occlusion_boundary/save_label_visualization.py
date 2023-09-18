@@ -41,7 +41,7 @@ def save_label_visualization(ARGS):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="save visualization of the object segmentation label",
+        description="save visualization of the boundary segmentation label",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("--input_label_file", type=str,
