@@ -20,6 +20,7 @@ def label_to_rgb(label):
     Returns:
         torch.Tensor: Shape (no. of images, 3, height, width): RGB representation of the labels
     '''
+    rgbArray = None
     if len(label.shape) == 4:
         # Shape: (batchSize, 1, height, width)
         rgbArray = torch.zeros((label.shape[0], 3, label.shape[2], label.shape[3]), dtype=torch.float)
