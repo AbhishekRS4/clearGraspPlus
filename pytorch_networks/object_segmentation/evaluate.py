@@ -66,7 +66,15 @@ def evaluate(model, test_loader, device, num_classes, precision=5, dir_results_t
                 pred_rgb = utils.label_to_rgb(torch.unsqueeze(pred_labels, 0))
                 label_rgb = utils.label_to_rgb(labels)
 
-                images = torch.cat((img, pred_rgb, label_rgb), dim=2)
+                images = torch.cat(
+                    (
+                        img.squeeze(),
+                        pred_rgb.squeeze(),
+                        label_rgb.squeeze()
+                    ),
+                    dim=2
+                )
+                #print(images.shape)
                 grid_image = make_grid(images, 1, normalize=True, scale_each=True)
                 numpy_grid = grid_image * 255  # Scale from range [0.0, 1.0] to [0, 255]
                 numpy_grid = numpy_grid.numpy().transpose(1, 2, 0).astype(np.uint8)
