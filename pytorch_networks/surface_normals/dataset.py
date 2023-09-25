@@ -56,7 +56,7 @@ class SurfaceNormalsDataset(Dataset):
         self._datalist_input = []  # Variable containing list of all input images filenames in dataset
         self._datalist_label = []
         self._datalist_mask = []
-        self._extension_input = ['-transparent-rgb-img.jpg', '-rgb.jpg', '-input-img.jpg']  # The file extension of input images
+        self._extension_input = ['-transparent-rgb-img.jpg', '-rgb.jpg', '-input-img.jpg', '-rgb.png']  # The file extension of input images
         self._extension_label = ['-cameraNormals.exr', '-normals.exr']
         self._extension_mask = ['-mask.png']
         self._create_lists_filenames(self.images_dir, self.labels_dir, self.masks_dir)
