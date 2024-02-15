@@ -12,6 +12,8 @@
 * The original dataset can be downloaded from here
   * [Download Data - Training Set](https://storage.googleapis.com/cleargrasp/cleargrasp-dataset-train.tar)  
   * [Download Data - Testing and Validation Set](https://storage.googleapis.com/cleargrasp/cleargrasp-dataset-test-val.tar)
+  * [Additional Training dataset COCO](http://images.cocodataset.org/zips/train2014.zip)
+  * [Additional Training dataset NYU_v2](https://cs.nyu.edu/~silberman/datasets/nyu_depth_v2.html)
   * [Additional Data for testing](https://github.com/AbhishekRS4/IRL_transparent_objects_set/tree/main/data)
   * [Download 3D Models](https://storage.googleapis.com/cleargrasp/cleargrasp-3d-models.tar)
 * In this work, we propose to use a custom network for the individual tasks, an encoder-decoder based network with ResNet50+PSA and DeepLabV3+ respectively, and then use their predictions in the clearGrasp pipeline for enhancing the depth estimation for transparent objects
