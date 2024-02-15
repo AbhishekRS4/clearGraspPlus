@@ -142,12 +142,12 @@ eval:
 
   # Params
   saveResultImages: True
-  model: "resnet50_psa" # Possible values: ['drn', 'drn_psa']
+  model: "drn" # Possible values: ['drn', 'drn_psa']
   numClasses: 3
   batchSize: 1
   imgHeight: 256
   imgWidth: 256
   # os: 8
   numWorkers: 4 # Num of workers used in the dataloader
-  pathWeightsFile: "/home/abhishek/Desktop/RUG/ai_master_thesis/my_checkpoints/resnet50_psa_rad_adam_nyu/surface_normals/sur_normal_epoch_70.pth" # Path to the checkpoint to be loaded
-  resultsDir: "/home/abhishek/Desktop/RUG/ai_master_thesis/my_checkpoints/resnet50_psa_rad_adam_nyu/surface_normals/my_results/"
+  pathWeightsFile: "/home/abhishek/Desktop/RUG/ai_master_thesis/my_checkpoints/drn_new_cos_adam/surface_normals/sur_normal_epoch_40.pth" # Path to the checkpoint to be loaded
+  resultsDir: "/home/abhishek/Desktop/RUG/ai_master_thesis/my_checkpoints/drn_new_cos_adam/surface_normals/my_results/"

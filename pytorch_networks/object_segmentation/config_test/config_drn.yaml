@@ -114,14 +114,18 @@ eval:
     - images: "/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/real-val/d435/"
       labels: "/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/real-val/d435/"
 
+  datasetsMatterport:
+    # - images: 'data/datasets/matterport3d/train/matterport_rgb/v1/scans'
+    #   labels: 'data/datasets/matterport3d/train/matterport_render_normal'
+
   # Params
   saveResultImages: True
-  model: "resnet50_psa" # Possible values: ['drn', 'drn_psa']
+  model: "drn" # Possible values: ['drn', 'drn_psa']
   numClasses: 2
   batchSize: 1
   imgHeight: 256
   imgWidth: 256
   #os: 8
   numWorkers: 4 # Num of workers used in the dataloader
-  pathWeightsFile: "/home/abhishek/Desktop/RUG/ai_master_thesis/my_checkpoints/resnet50_psa_finetuned/object_segmentation/obj_seg_epoch_82.pth" # Path to the checkpoint to be loaded
-  resultsDir: "/home/abhishek/Desktop/RUG/ai_master_thesis/my_checkpoints/resnet50_psa_finetuned/object_segmentation/results/"
+  pathWeightsFile: "/home/abhishek/Desktop/RUG/ai_master_thesis/my_checkpoints/drn_finetuned/object_segmentation/obj_seg_epoch_60.pth" # Path to the checkpoint to be loaded
+  resultsDir: "/home/abhishek/Desktop/RUG/ai_master_thesis/my_checkpoints/drn_finetuned/object_segmentation/results/"
