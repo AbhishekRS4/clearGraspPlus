@@ -92,9 +92,9 @@ def evaluate_depth_completion(ARGS):
 
     for dict_dataset in config.files:
         dataset = NestedAttrDict(**dict_dataset)
-        EXT_COLOR_IMG = ['-transparent-rgb-img.jpg', '-rgb.jpg']  #'-rgb.jpg' - includes normals-rgb.jpg
+        EXT_COLOR_IMG = ['-transparent-rgb-img.jpg', '-rgb.jpg', '-rgb.png']  #'-rgb.jpg' - includes normals-rgb.jpg
         EXT_DEPTH_IMG = ['-depth-rectified.exr', '-transparent-depth-img.exr']
-        EXT_DEPTH_GT = ['-depth-rectified.exr', '-opaque-depth-img.exr']
+        EXT_DEPTH_GT = ['-depth-rectified.exr', '-opaque-depth-img.exr', '-transparent-depth-img.exr']
         EXT_MASK = ['-mask.png']
 
         for ext in EXT_COLOR_IMG:
