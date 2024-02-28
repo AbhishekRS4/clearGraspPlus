@@ -27,7 +27,7 @@ import numpy as np
 
 def main(args):
     # Load Config File
-    CONFIG_FILE_PATH = args.configFile
+    CONFIG_FILE_PATH = args.config_file
     with open(CONFIG_FILE_PATH) as fd:
         config_yaml = yaml.safe_load(fd)
     config = attrdict.AttrDict(config_yaml)
@@ -83,9 +83,10 @@ def main(args):
 
     for i in range(len(rgb_file_list)):
         # Run Depth Completion
-        color_img = imageio.imread(rgb_file_list[i])
-        input_depth = imageio.imread(depth_file_list[i])
-
+        color_img = imageio.imread(os.path.join(args.dir_data, "color_images", rgb_file_list[i]))
+        input_depth = imageio.imread(os.path.join(args.dir_data, "depth_images", depth_file_list[i]))
+        if len(input_depth.shape) > 2:
+            input_depth = input_depth[:, :, 0].astype(np.float32)
         try:
             output_depth, filtered_output_depth = depthcomplete.depth_completion(
                 color_img,
@@ -110,7 +111,7 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run eval of depth completion on synthetic data')
-    parser.add_argument('-c', '--configFile', required=True, help='Path to config yaml file', metavar='path/to/config')
+    parser.add_argument('-c', '--config_file', required=True, help='Path to config yaml file', metavar='path/to/config')
     parser.add_argument('-m', '--maskInputDepth', action="store_true", help='Whether we should mask out objects in input depth')
     parser.add_argument("-d", "--dir_data", required=True, help="full path to directory containing the data")
     parser.add_argument("-r", "--dir_results", required=True, help="full path to directory where results need to be saved")
