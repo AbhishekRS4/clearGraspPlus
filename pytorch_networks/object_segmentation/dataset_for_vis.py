@@ -60,7 +60,6 @@ class ObjectSegmentationDataset(Dataset):
 
         Returns:
             torch.Tensor: Tensor of input image
-            torch.Tensor: Tensor of label
         """
 
         # Open input imgs
@@ -213,33 +212,3 @@ def get_augumentation_list(which_set, img_height, img_width):
         augs_list_for_a_set = augs_test
 
     return augs_list_for_a_set
-
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-
-    from torch.utils.data import DataLoader
-    from torchvision import transforms
-    import torchvision
-
-    augs = None  # augs_train, augs_test, None
-    input_only = None  # ["gaus-blur", "grayscale", "gaus-noise", "brightness", "contrast", "hue-sat", "color-jitter"]
-
-    db_test = ObjectSegmentationDataset(
-        input_dir="data/datasets/milk-bottles/resized-files/preprocessed-rgb-imgs",
-        transform=augs,
-        input_only=input_only
-    )
-
-    batch_size = 16
-    testloader = DataLoader(db_test, batch_size=batch_size, shuffle=True, num_workers=32, drop_last=True)
-
-    # Show 1 Shuffled Batch of Images
-    for ii, batch in enumerate(testloader):
-        # Get Batch
-        img, img_path = batch
-        print("image shape, type: ", img.shape, img.dtype)
-        plt.imshow(im_vis.numpy().transpose(1, 2, 0))
-        plt.show()
-
-        break
