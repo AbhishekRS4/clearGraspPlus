@@ -32,7 +32,7 @@ Abhishek R. S.: abhishek[dot]r[dot]satyanarayana[dot]4[at]gmail[dot]com
 * The required system dependencies can be installed using the following commands
 ```bash
 sudo apt-get install libhdf5-10 libhdf5-serial-dev libhdf5-dev libhdf5-cpp-11
-sudo apt install libopenexr-dev zlib1g-dev openexr
+sudo apt install libopenexr-dev zlib1g-dev openexr # required for openexr
 sudo apt install xorg-dev  # display widows
 sudo apt install libglfw3-dev
 ```
@@ -40,6 +40,7 @@ sudo apt install libglfw3-dev
 ```
 pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu113
 ```
+* For `openexr` python package, install it using the following command `pip install --no-binary openexr openexr`
 * The rest of the Python package dependencies can be found in [requirements.txt](requirements.txt)
 
 ## LibRealSense (Optional)
