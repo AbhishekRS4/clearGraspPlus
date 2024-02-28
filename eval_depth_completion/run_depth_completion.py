@@ -116,4 +116,3 @@ if __name__ == '__main__':
     parser.add_argument("-r", "--dir_results", required=True, help="full path to directory where results need to be saved")
     args = parser.parse_args()
     main(args)
-    return
