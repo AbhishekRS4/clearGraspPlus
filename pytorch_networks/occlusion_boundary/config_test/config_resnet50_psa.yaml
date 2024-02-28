@@ -44,7 +44,7 @@ train:
     #  labels: 'data/data/datasets/test-synthetic/scoop-val/source-files/outlines'
 
   # Training/Validation Params
-  model: "drn_psa" # Possible values: ['drn', 'drn_psa']
+  model: "drn_psa"
   batchSize: 8
   validationBatchSize: 8
   testBatchSize: 8
@@ -117,12 +117,32 @@ eval:
 
   # Params
   saveResultImages: True
-  model: "resnet50_psa" # Possible values: ['drn', 'drn_psa']
+  model: "resnet50_psa"
   numClasses: 3
   batchSize: 1
   imgHeight: 256
   imgWidth: 256
   #os: 8
   numWorkers: 4 # Num of workers used in the dataloader
-  pathWeightsFile: "/home/abhishek/Desktop/RUG/ai_master_thesis/my_checkpoints/resnet50_psa/occlusion_boundary/occ_boundary_epoch_198.pth" # Path to the checkpoint to be loaded
-  resultsDir: "/home/abhishek/Desktop/RUG/ai_master_thesis/my_checkpoints/resnet50_psa/occlusion_boundary/results/"
+  pathWeightsFile: "/home/abhishek/Desktop/github_repos/ai_master_thesis/my_checkpoints/resnet50_psa/occlusion_boundary/occ_boundary_epoch_198.pth" # Path to the checkpoint to be loaded
+  resultsDir: "/home/abhishek/Desktop/github_repos/ai_master_thesis/my_checkpoints/resnet50_psa/occlusion_boundary/results/"
+vis:
+  # Datasets of real images, no labels available
+  # Used as Test set
+  datasets:
+    - images: "/home/abhishek/Desktop/github_repos/ai_master_thesis/irl_transparent_objects_set/multi_objects/"
+    # - images: "/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/real-test/d435/"
+    # - images: "/home/abhishek/Desktop/RUG/ai_master_thesis/cleargrasp-dataset-test-val/real-val/d435/"
+
+
+  # Params
+  saveResultImages: True
+  model: "resnet50_psa"
+  numClasses: 3
+  batchSize: 1
+  imgHeight: 256
+  imgWidth: 256
+  #os: 8
+  numWorkers: 4 # Num of workers used in the dataloader
+  pathWeightsFile: "/home/abhishek/Desktop/github_repos/ai_master_thesis/my_checkpoints/resnet50_psa/occlusion_boundary/occ_boundary_epoch_198.pth" # Path to the checkpoint to be loaded
+  resultsDir: "/home/abhishek/Desktop/github_repos/ai_master_thesis/my_checkpoints/resnet50_psa/occlusion_boundary/pred_viz/"
