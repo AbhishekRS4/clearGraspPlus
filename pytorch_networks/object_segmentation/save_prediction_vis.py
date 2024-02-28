@@ -91,7 +91,6 @@ def save_prediction_vis(ARGS):
         os.makedirs(DIR_RESULTS)
 
     print(f"Saving results to folder: {DIR_RESULTS}")
-    # Create CSV File to store error metrics
 
     ###################### DataLoader #############################
     augs_test = get_augumentation_list("test",
