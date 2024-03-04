@@ -259,7 +259,7 @@ def start_evaluation(ARGS):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Run eval of outlines prediction model",
+        description="Run eval of object segmentation model",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("-c", "--config_file", required=True, help="Path to yaml config file", metavar="path/to/config.yaml")
