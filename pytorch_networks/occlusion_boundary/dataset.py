@@ -18,7 +18,7 @@ from torch.utils.data import Dataset, DataLoader
 
 class OcclusionBoundaryDataset(Dataset):
     """
-    Dataset class for training model on estimation of surface normals.
+    Dataset class for training model on estimation of occlusion boundary.
     Uses imgaug for image augmentations.
 
     If a label_dir is blank ( None, ''), it will assume labels do not exist and return a tensor of zeros
@@ -281,7 +281,7 @@ if __name__ == '__main__':
     augs = None  # augs_train, augs_test, None
     input_only = None  # ["gaus-blur", "grayscale", "gaus-noise", "brightness", "contrast", "hue-sat", "color-jitter"]
 
-    db_test = OutlinesDataset(
+    db_test = OcclusionBoundaryDataset(
         input_dir='data/datasets/milk-bottles/resized-files/preprocessed-rgb-imgs',
         label_dir='data/datasets/milk-bottles/resized-files/preprocessed-camera-normals',
         transform=augs,
