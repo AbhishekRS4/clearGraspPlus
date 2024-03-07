@@ -18,7 +18,7 @@ from torch.utils.data import Dataset, DataLoader
 
 class OcclusionBoundaryDataset(Dataset):
     """
-    Dataset class for training model on estimation of surface normals.
+    Dataset class for training model on estimation of occlusion boundary.
     Uses imgaug for image augmentations.
 
     If a label_dir is blank ( None, ''), it will assume labels do not exist and return a tensor of zeros
